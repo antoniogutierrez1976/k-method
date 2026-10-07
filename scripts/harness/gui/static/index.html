@@ -3,38 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Antigravity 2.0 - k-method SDLC Engine</title>
+  <title>Antigravity 2.0 - k-method SDLC Studio</title>
   <link rel="stylesheet" href="/static/style.css">
+  <!-- Marked.js for rich Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
   <div id="app-container">
-    <!-- 1. Left Sidebar -->
+    <!-- =================================================================== -->
+    <!-- 1. Left Sidebar (Google Antigravity System)                         -->
+    <!-- =================================================================== -->
     <aside id="sidebar-left">
+      <!-- Brand Header -->
       <div class="brand-header">
-        <span>🚀 Antigravity 2.0</span>
+        <div class="brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="brand-title">Antigravity 2.0</span>
+        <span class="brand-version">v17</span>
       </div>
 
-      <div class="control-group">
-        <label>Workspace</label>
-        <div style="font-size: 0.9rem; font-weight: 600;" id="workspace-label">k-method</div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">Rama: <span id="branch-label">main</span></div>
-        <div style="margin-top: 4px;">
-          <span id="stash-shield-status" class="status-badge clean">🛡️ Stash Shield</span>
+      <!-- Workspace Card with Stash Shield -->
+      <div class="workspace-card">
+        <span class="workspace-label">Entorno de Trabajo</span>
+        <div class="workspace-name-row">
+          <div class="workspace-name">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span id="workspace-label">k-method</span>
+          </div>
+          <div class="branch-chip">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="6" y1="3" x2="6" y2="15"/>
+              <circle cx="18" cy="6" r="3"/>
+              <circle cx="6" cy="18" r="3"/>
+              <path d="M18 9a9 9 0 0 1-9 9"/>
+            </svg>
+            <span id="branch-label">main</span>
+          </div>
+        </div>
+        <div id="stash-shield-status" class="status-badge clean">
+          <span class="status-dot"></span>
+          <span>🛡️ Stash Shield</span>
         </div>
       </div>
 
+      <!-- Provider Selector -->
       <div class="control-group">
         <label for="provider-select">Proveedor de LLM</label>
-        <select id="provider-select">
+        <select id="provider-select" class="control-select">
           <option value="antigravity">Google Antigravity SDK</option>
           <option value="copilot">GitHub Copilot SDK</option>
           <option value="mock">Offline Mock Provider</option>
         </select>
       </div>
 
+      <!-- Model Selector -->
       <div class="control-group">
         <label for="model-select">Modelo Destino</label>
-        <select id="model-select">
+        <select id="model-select" class="control-select">
           <option value="gemini-2.5-flash">gemini-2.5-flash</option>
           <option value="gemini-2.5-pro">gemini-2.5-pro</option>
           <option value="gemini-3.8-flash">gemini-3.8-flash (SDK Default)</option>
@@ -43,76 +73,191 @@
         </select>
       </div>
 
-      <div class="control-group" style="flex: 1; overflow: hidden;">
+      <!-- Embedded Skills Container -->
+      <div class="control-group" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
         <label>Skills Embebidas (Karpathy v17)</label>
         <div id="skills-list" class="skills-container">
-          <!-- Loaded dynamically from /api/skills -->
+          <!-- Dynamically populated from /api/skills -->
         </div>
       </div>
     </aside>
 
-    <!-- 2. Central Chat Canvas -->
+    <!-- =================================================================== -->
+    <!-- 2. Central Chat Canvas (Google Gemini & Antigravity Style)         -->
+    <!-- =================================================================== -->
     <main id="chat-canvas">
       <header class="canvas-header">
-        <span style="font-weight: 600; font-size: 0.9rem;">Chat Canvas &amp; SDLC State</span>
-        <span id="active-stage-pill" class="stage-pill">INICIALIZACIÓN</span>
+        <div class="canvas-header-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gemini-cyan);">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span class="canvas-title">SDLC Orchestration Canvas</span>
+        </div>
+        <div id="active-stage-pill" class="stage-pill">
+          <span class="status-dot"></span>
+          <span>INICIALIZACIÓN</span>
+        </div>
       </header>
 
       <section id="chat-messages">
-        <div class="message-bubble agent">
-          Hola. Soy el motor de orquestación de <strong>k-method</strong>. Escribe una tarea para iniciar el ciclo SDLC de Karpathy (Spec &rarr; Stash Shield &rarr; TDD &rarr; OKF).
+        <div class="message-row agent">
+          <div class="message-avatar agent-avatar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="message-bubble agent">
+            Hola. Soy el motor de orquestación de <strong>k-method</strong> con directivas Karpathy v17 inyectadas en memoria.<br>
+            Introduce una funcionalidad o corrección en el canvas inferior para ejecutar el ciclo (<em>Spec &rarr; Stash Shield &rarr; TDD Red-Green &rarr; OKF</em>).
+          </div>
         </div>
       </section>
 
       <!-- Human-in-the-loop Approval Action Bar -->
       <section id="approval-bar">
-        <div style="font-weight: 600; color: var(--accent-amber); display: flex; align-items: center; gap: 6px;">
-          ✋ Aprobación Humana Requerida: Se ha generado la especificación (spec.md).
+        <div class="approval-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>Aprobación Humana Requerida: Especificación (spec.md) Lista</span>
         </div>
-        <p style="font-size: 0.85rem; color: var(--text-muted);">
-          Revisa los criterios de aceptación en la pestaña <em>Artifacts</em> del panel derecho antes de autorizar el ciclo TDD.
-        </p>
+        <div class="approval-desc">
+          Revisa los Criterios de Aceptación (máx. 6 ACs) en la pestaña <strong>Artifacts</strong> del panel lateral derecho antes de autorizar el ciclo TDD.
+        </div>
         <div class="approval-actions">
-          <button id="btn-approve" class="btn btn-approve">Aprobar y Ejecutar TDD</button>
-          <button id="btn-revise" class="btn btn-revise">Rechazar / Solicitar Revisión</button>
+          <button id="btn-approve" class="btn btn-approve">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Aprobar y Ejecutar TDD</span>
+          </button>
+          <button id="btn-revise" class="btn btn-revise">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            <span>Rechazar / Solicitar Revisión</span>
+          </button>
         </div>
       </section>
 
+      <!-- Floating Gemini-style Input Canvas -->
       <footer class="chat-input-area">
         <form id="task-form" class="chat-input-wrapper">
-          <input type="text" id="task-input" placeholder="Describe la funcionalidad o corrección (ej: 'Implementar endpoint de métricas')..." autocomplete="off">
-          <button type="submit">Ejecutar</button>
+          <input type="text" id="task-input" placeholder="Escribe tu requerimiento (ej: 'Implementar endpoint de salud y métricas Prometheus')..." autocomplete="off">
+          <button type="submit" class="btn-send" title="Ejecutar tarea">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
         </form>
       </footer>
     </main>
 
-    <!-- 3. Right Auxiliary Pane -->
+    <!-- =================================================================== -->
+    <!-- 3. Right Auxiliary Pane (Tabs: Artifacts, Diff, TDD, OKF)          -->
+    <!-- =================================================================== -->
     <aside id="auxiliary-pane">
       <nav class="tab-nav">
-        <button class="tab-btn active" data-tab="artifacts">📑 Artifacts</button>
-        <button class="tab-btn" data-tab="diff">🔄 Diff</button>
-        <button class="tab-btn" data-tab="tdd">🧪 TDD</button>
-        <button class="tab-btn" data-tab="okf">📚 OKF</button>
+        <button class="tab-btn active" data-tab="artifacts">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span>Artifacts</span>
+        </button>
+        <button class="tab-btn" data-tab="diff">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="18" r="3"/>
+            <circle cx="6" cy="6" r="3"/>
+            <path d="M13 6h3a2 2 0 0 1 2 2v7"/>
+            <line x1="6" y1="9" x2="6" y2="21"/>
+          </svg>
+          <span>Diff</span>
+        </button>
+        <button class="tab-btn" data-tab="tdd">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"/>
+            <line x1="12" y1="19" x2="20" y2="19"/>
+          </svg>
+          <span>TDD</span>
+        </button>
+        <button class="tab-btn" data-tab="okf">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span>OKF</span>
+        </button>
       </nav>
 
+      <!-- Artifacts Tab -->
       <div id="tab-content-artifacts" class="tab-content active">
-        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Especificación / Pull Request</div>
-        <pre id="artifacts-viewer">(Ningún artefacto generado todavía)</pre>
+        <div class="aux-header-label">
+          <span>Vista Previa de Especificación / PR</span>
+        </div>
+        <div id="artifacts-viewer" class="markdown-body">
+          <p style="color: var(--text-tertiary); font-style: italic;">(Ningún artefacto generado aún. Ejecuta una tarea para iniciar).</p>
+        </div>
       </div>
 
+      <!-- Diff Tab -->
       <div id="tab-content-diff" class="tab-content">
-        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Git Working Tree Diff</div>
-        <pre id="diff-viewer">(Sin modificaciones pendientes)</pre>
+        <div class="aux-header-label">
+          <span>Git Working Tree Diff</span>
+          <button id="btn-refresh-diff" style="background: transparent; border: none; color: var(--gemini-cyan); cursor: pointer; font-size: 0.75rem;">↻ Actualizar</button>
+        </div>
+        <div id="diff-viewer" class="diff-container">(Sin modificaciones pendientes)</div>
       </div>
 
+      <!-- TDD Tab -->
       <div id="tab-content-tdd" class="tab-content">
-        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Salida del Verifier (Red / Green)</div>
-        <pre id="tdd-viewer">(Esperando inicio del ciclo TDD...)</pre>
+        <div class="aux-header-label">
+          <span>Salida del Verifier (TDD Red &rarr; Green)</span>
+        </div>
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+            <span class="term-title">k-verifier-terminal</span>
+          </div>
+          <div id="tdd-viewer" class="terminal-body">[k-verifier] En espera de ejecución TDD...</div>
+        </div>
       </div>
 
+      <!-- OKF Tab -->
       <div id="tab-content-okf" class="tab-content">
-        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Grafo de Conocimiento OKF</div>
-        <pre id="okf-viewer">ADR-001: Karpathy 3-Layer Architecture&#10;ADR-002: Multi-Platform CI PR Strategy&#10;ADR-003: Dual SDK Execution Harness&#10;ADR-004: Antigravity GUI and Embedded Skills</pre>
+        <div class="aux-header-label">
+          <span>Grafo de Conocimiento (OKF) &amp; ADRs</span>
+        </div>
+        <div id="okf-viewer" class="okf-cards-list">
+          <div class="okf-card">
+            <span class="okf-card-id">ADR-001</span>
+            <span class="okf-card-title">Karpathy 3-Layer Architecture (Spec, Verifier, Environment)</span>
+          </div>
+          <div class="okf-card">
+            <span class="okf-card-id">ADR-002</span>
+            <span class="okf-card-title">Multi-Platform CI &amp; Pull Request Strategy</span>
+          </div>
+          <div class="okf-card">
+            <span class="okf-card-id">ADR-003</span>
+            <span class="okf-card-title">Dual SDK Execution Harness (Google Antigravity &amp; Copilot)</span>
+          </div>
+          <div class="okf-card">
+            <span class="okf-card-id">ADR-004</span>
+            <span class="okf-card-title">Antigravity GUI and Embedded Skills Pattern</span>
+          </div>
+        </div>
       </div>
     </aside>
   </div>

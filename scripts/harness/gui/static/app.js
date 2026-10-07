@@ -16,6 +16,7 @@ function escapeHtml(unsafeText) {
 
 let ws = null;
 let currentAgentMessageEl = null;
+let currentRawContent = "";
 
 function initTabs() {
   const tabBtns = document.querySelectorAll(".tab-btn");
@@ -31,6 +32,29 @@ function initTabs() {
         targetContent.classList.add("active");
       }
     });
+  });
+}
+
+function renderDiff(diffText) {
+  const viewer = document.getElementById("diff-viewer");
+  if (!viewer) return;
+  if (!diffText || !diffText.trim()) {
+    viewer.textContent = "(Sin modificaciones en el working tree)";
+    return;
+  }
+  const lines = diffText.split("\n");
+  viewer.innerHTML = "";
+  lines.forEach((line) => {
+    const div = document.createElement("div");
+    if (line.startsWith("+") && !line.startsWith("+++")) {
+      div.className = "diff-line-add";
+    } else if (line.startsWith("-") && !line.startsWith("---")) {
+      div.className = "diff-line-del";
+    } else if (line.startsWith("@@")) {
+      div.className = "diff-line-hunk";
+    }
+    div.textContent = line;
+    viewer.appendChild(div);
   });
 }
 
@@ -55,8 +79,10 @@ async function loadStatusAndSkills() {
         const item = document.createElement("div");
         item.className = "skill-badge";
         item.innerHTML = `
-          <span class="badge-name">${escapeHtml(skill.name)}</span>
-          <span class="badge-layer">${escapeHtml(skill.layer)}</span>
+          <div class="skill-badge-header">
+            <span class="badge-name">${escapeHtml(skill.name)}</span>
+            <span class="badge-layer">${escapeHtml(skill.layer)}</span>
+          </div>
         `;
         listEl.appendChild(item);
       });
@@ -65,7 +91,7 @@ async function loadStatusAndSkills() {
     const resDiff = await fetch("/api/diff");
     if (resDiff.ok) {
       const diffData = await resDiff.json();
-      document.getElementById("diff-viewer").textContent = diffData.diff || "(No working tree modifications)";
+      renderDiff(diffData.diff || "");
     }
   } catch (err) {
     console.error("Failed to load workspace status:", err);
@@ -122,25 +148,49 @@ function connectWebSocket() {
 }
 
 function handleStageChanged(stage) {
-  document.getElementById("active-stage-pill").textContent = escapeHtml(stage);
+  const pill = document.getElementById("active-stage-pill");
+  if (pill) {
+    pill.innerHTML = `<span class="status-dot"></span><span>${escapeHtml(stage)}</span>`;
+  }
   appendChatEvent(`Fase activa: ${stage}`, "agent");
   currentAgentMessageEl = null;
+  currentRawContent = "";
 }
 
 function handleToken(tokenContent) {
   if (!currentAgentMessageEl) {
-    currentAgentMessageEl = document.createElement("div");
-    currentAgentMessageEl.className = "message-bubble agent";
-    document.getElementById("chat-messages").appendChild(currentAgentMessageEl);
+    const row = document.createElement("div");
+    row.className = "message-row agent";
+    row.innerHTML = `
+      <div class="message-avatar agent-avatar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div class="message-bubble agent"></div>
+    `;
+    document.getElementById("chat-messages").appendChild(row);
+    currentAgentMessageEl = row.querySelector(".message-bubble");
+    currentRawContent = "";
   }
-  currentAgentMessageEl.innerHTML += escapeHtml(tokenContent);
+  currentRawContent += tokenContent;
+  if (window.marked && typeof marked.parse === "function") {
+    currentAgentMessageEl.innerHTML = marked.parse(currentRawContent);
+  } else {
+    currentAgentMessageEl.innerHTML = escapeHtml(currentRawContent);
+  }
   const container = document.getElementById("chat-messages");
   container.scrollTop = container.scrollHeight;
 }
 
 function handleApprovalRequired(specContent) {
   document.getElementById("approval-bar").classList.add("active");
-  document.getElementById("artifacts-viewer").textContent = specContent;
+  const artifactsViewer = document.getElementById("artifacts-viewer");
+  if (window.marked && typeof marked.parse === "function") {
+    artifactsViewer.innerHTML = marked.parse(specContent);
+  } else {
+    artifactsViewer.textContent = specContent;
+  }
   
   // Switch auxiliary tab to artifacts
   const artifactsBtn = document.querySelector('[data-tab="artifacts"]');
@@ -153,7 +203,12 @@ function handleTddOutput(returncode, output) {
 }
 
 function handleCompleted(prContent) {
-  document.getElementById("artifacts-viewer").textContent = prContent;
+  const artifactsViewer = document.getElementById("artifacts-viewer");
+  if (window.marked && typeof marked.parse === "function") {
+    artifactsViewer.innerHTML = marked.parse(prContent);
+  } else {
+    artifactsViewer.textContent = prContent;
+  }
   appendChatEvent("🚀 Ejecución completada. Todos los quality gates superados.", "agent");
 }
 
@@ -162,10 +217,28 @@ function handleError(errorMessage) {
 }
 
 function appendChatEvent(text, sender) {
+  const row = document.createElement("div");
+  row.className = `message-row ${sender}`;
+  
+  const avatar = document.createElement("div");
+  avatar.className = `message-avatar ${sender}-avatar`;
+  if (sender === "user") {
+    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  } else {
+    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+  }
+
   const bubble = document.createElement("div");
   bubble.className = `message-bubble ${sender}`;
-  bubble.innerHTML = escapeHtml(text);
-  document.getElementById("chat-messages").appendChild(bubble);
+  if (sender === "agent" && window.marked && typeof marked.parse === "function") {
+    bubble.innerHTML = marked.parse(text);
+  } else {
+    bubble.innerHTML = escapeHtml(text);
+  }
+
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  document.getElementById("chat-messages").appendChild(row);
   const container = document.getElementById("chat-messages");
   container.scrollTop = container.scrollHeight;
 }
@@ -186,6 +259,21 @@ function initActionButtons() {
     }
     appendChatEvent("🛑 Especificación rechazada para revisión.", "user");
   });
+
+  const refreshDiffBtn = document.getElementById("btn-refresh-diff");
+  if (refreshDiffBtn) {
+    refreshDiffBtn.addEventListener("click", async () => {
+      try {
+        const resDiff = await fetch("/api/diff");
+        if (resDiff.ok) {
+          const diffData = await resDiff.json();
+          renderDiff(diffData.diff || "");
+        }
+      } catch (e) {
+        console.error("Error refreshing diff:", e);
+      }
+    });
+  }
 
   document.getElementById("task-form").addEventListener("submit", (e) => {
     e.preventDefault();
