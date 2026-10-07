@@ -1,0 +1,8 @@
+# Optional dependencies for k-method execution harness
+# Install to enable direct live provider connections
+
+# GitHub Copilot SDK (Professional / Corporate mode)
+github-copilot-sdk>=0.1.0
+
+# Google Antigravity SDK (Personal / Local testing mode)
+google-antigravity>=0.1.0
