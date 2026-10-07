@@ -1,3 +1,4 @@
+import os
 from typing import Optional, AsyncGenerator
 from .base import BaseAgentProvider, AgentResponse, ProviderError
 
@@ -13,10 +14,12 @@ class AntigravityProvider(BaseAgentProvider):
         model: str = "gemini-3.8-flash",
         allow_write: bool = False,
         allow_terminal: bool = False,
+        api_key: Optional[str] = None,
     ):
         super().__init__(model=model)
         self.allow_write = allow_write
         self.allow_terminal = allow_terminal
+        self._api_key = api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 
     def _spawn_agent(self, system_prompt: str):
         """
@@ -28,10 +31,13 @@ class AntigravityProvider(BaseAgentProvider):
                 allow_write=self.allow_write,
                 allow_terminal=self.allow_terminal,
             )
-            config = LocalAgentConfig(
-                system_instructions=system_prompt,
-                capabilities=capabilities,
-            )
+            config_kwargs = {
+                "system_instructions": system_prompt,
+                "capabilities": capabilities,
+            }
+            if self._api_key:
+                config_kwargs["api_key"] = self._api_key
+            config = LocalAgentConfig(**config_kwargs)
             return Agent(config)
         except ImportError as e:
             raise ProviderError(
@@ -93,7 +99,8 @@ class AntigravityProvider(BaseAgentProvider):
     def __repr__(self) -> str:
         return (
             f"<AntigravityProvider model='{self.model}' "
-            f"allow_write={self.allow_write} allow_terminal={self.allow_terminal}>"
+            f"allow_write={self.allow_write} allow_terminal={self.allow_terminal} "
+            f"auth_configured={bool(self._api_key)}>"
         )
 
     def __str__(self) -> str:

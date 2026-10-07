@@ -38,6 +38,12 @@ class TestProviderAdapters(unittest.IsolatedAsyncioTestCase):
         err = ProviderError(f"Authentication failed with token: {token}")
         self.assertNotIn(token, str(err), "Security leak: API token exposed in ProviderError message")
 
+        # Test AntigravityProvider credential redaction
+        api_key = "AIzaSyD-SecretAntigravityKey12345678"
+        agy_provider = AntigravityProvider(api_key=api_key)
+        self.assertNotIn(api_key, repr(agy_provider), "Security leak: API key exposed in AntigravityProvider repr()")
+        self.assertNotIn(api_key, str(agy_provider), "Security leak: API key exposed in AntigravityProvider str()")
+
     async def test_AC_1_factory_and_mock(self):
         """
         AC-1 (Happy Path - Factory & Mock): ProviderFactory creates functional mock provider.
