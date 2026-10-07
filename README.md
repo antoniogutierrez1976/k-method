@@ -1,6 +1,9 @@
-# k-method: Karpathy 3-Layer Skills Pack v17 (High-Context Epic Edition)
+# k-method: Karpathy 3-Layer Skills Pack (WIP)
 
-Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3 layers (Spec, Verifier, Environment) + LLM-Wiki knowledge graph. Fully compliant with Anthropic's **"The Complete Guide to Building Skills for Claude"** and Agent Skills standards.
+> [!NOTE]
+> **Status:** Work In Progress (WIP) — Active Development. There is no released or in-flight production version yet.
+
+Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3 layers (Spec, Verifier, Environment) + LLM-Wiki knowledge graph. Fully compliant with Anthropic's **"The Complete Guide to Building Skills for Claude"** and Google Antigravity Agent Skills standards.
 
 ## Skills Included (`k-*`)
 
@@ -13,12 +16,12 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 | **`k-wiki`** | [`.agents/skills/k-wiki/`](file:///d:/dev/k-method/.agents/skills/k-wiki/SKILL.md) | **Knowledge Graph** | Open Knowledge Format (OKF) engine, typed frontmatter, ADR lifecycle, [`.agents/skills/k-wiki/scripts/okf-lint.py`](file:///d:/dev/k-method/.agents/skills/k-wiki/scripts/okf-lint.py) compiler. |
 
 
-## The Day-2 Maintenance Evolutions (v17 Capstones):
+## Core Evolutions & Hardened Protocols
 1. **Strict Epic Detection (The 6-AC Rule):** Enforces a hard limit of 6 Acceptance Criteria per spec, forcing the LLM to decompose high-context functional requirements into multi-spec Epic roadmaps.
 2. **Shift-Left Security & Threat Modeling:** Enforces OWASP threat vector analysis and specific Security Acceptance Criteria (AC-Sec) in all new specifications.
-2. **Routine Maintenance Bypass (`/chore`):** Dedicated workflow for dependency bumps and minor refactors that skips heavy spec generation and goes straight to global regression validation.
-3. **Infrastructure as Code (IaC) Sync:** Extends environment drift prevention by ensuring `.env` changes are automatically propagated to Docker, Kubernetes (Helm), or Terraform manifests.
-4. **Structured Telemetry Ingestion (Noise Reduction):** Mandates CLI-based log truncation (`grep`, `jq`) during Stage 0 Forensic Triage to prevent context window saturation from raw Sentry/Datadog dumps.
+3. **Routine Maintenance Bypass (`/chore`):** Dedicated workflow for dependency bumps and minor refactors that skips heavy spec generation and goes straight to global regression validation.
+4. **Infrastructure as Code (IaC) Sync:** Extends environment drift prevention by ensuring `.env` changes are automatically propagated to Docker, Kubernetes (Helm), or Terraform manifests.
+5. **Structured Telemetry Ingestion (Noise Reduction):** Mandates CLI-based log truncation (`grep`, `jq`) during Stage 0 Forensic Triage to prevent context window saturation from raw Sentry/Datadog dumps.
 
 ## Full Feature Set (SDLC Complete):
 - **Pull Request & Release Artifact Generator:** Compiles PR bodies with AC ground-truth evidence, rollback instructions, and observability alerts.
@@ -50,6 +53,77 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 - **Tooling Ground Truth (CLI & MCP):** Native Model Context Protocol (MCP) support.
 - **Strangler Fig / Expand & Contract Template:** Breaking changes without downtime.
 - **Subagent Context Isolation:** Master supervisor state machine with zero-history context windows.
+
+## CLI Tools & Execution Harness
+
+The repository provides deterministic CLI tools and an interactive Windows-tailored execution harness implementing the **"Code > Prompt"** pattern.
+
+### 1. Interactive Windows Skills Runner (`k_runner.py` / `run-harness.ps1`)
+
+An interactive terminal application with Antigravity-style ANSI visual presentation (header banners, auxiliary status panels, human approval gates, and deadlock circuit breaker alerts).
+
+```powershell
+# 🏢 Professional Mode (GitHub Copilot SDK + OpenAI GPT-6 Luna / Sol):
+.\run-harness.ps1 -Provider copilot -Model gpt-6-luna -Task "Implement metrics endpoint"
+
+# 🏠 Personal Mode (Google Antigravity SDK + Gemini):
+.\run-harness.ps1 -Provider antigravity -Model gemini-3.8-flash -Task "Refactor database client"
+
+# 🧪 Offline / Mock Mode (Automated CI):
+python scripts/harness/k_runner.py --provider mock --task "Test pipeline" --auto-approve
+```
+
+#### CLI Options & Flags:
+
+| Flag | Env Variable | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--provider` | `K_HARNESS_PROVIDER` | `copilot` | Provider adapter: `copilot`, `antigravity`, or `mock`. |
+| `--model` | `K_HARNESS_MODEL` | `gpt-6-luna` / `gemini-3.8-flash` | Target model identifier. |
+| `--task` | — | *(Prompt)* | Description of task (prompts interactively if omitted). |
+| `--auto-approve` | — | `False` | Bypasses interactive spec approval gate (for CI/CD). |
+| `--branch` | — | `feat/{slug}` | Explicit Git task branch name. |
+
+---
+
+### 2. Universal Quality Gates Runner (`verify-all.py`)
+
+A platform-agnostic, all-in-one verification runner that executes all quality gates sequentially:
+
+```bash
+# Standard run (Unit tests + OKF lint + Stash Shield git diff check):
+python scripts/verify-all.py
+
+# Recompile the OKF index and run checks:
+python scripts/verify-all.py --compile-index
+
+# Skip git diff check (e.g. while editing in local development):
+python scripts/verify-all.py --skip-git-diff
+```
+
+---
+
+### 3. OKF Knowledge Graph Linter & Compiler (`okf-lint.py`)
+
+Deterministic compiler and validator for Open Knowledge Format (OKF) nodes:
+
+```bash
+# Lint knowledge graph integrity and check for broken links:
+python .agents/skills/k-wiki/scripts/okf-lint.py
+
+# Recompile knowledge-base/wiki/index.md deterministically:
+python .agents/skills/k-wiki/scripts/okf-lint.py --compile-index
+```
+
+---
+
+### 4. Automated Unit Test Suite
+
+```bash
+# Run all unit tests with verbose reporting:
+python -m unittest discover -s tests -v
+```
+
+---
 
 ## Installation & Usage
 
