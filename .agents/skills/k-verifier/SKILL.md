@@ -30,7 +30,7 @@ When refactoring legacy code without comprehensive pre-existing tests:
 
 ### 3. Flaky Test Immunity Pass (Stochastic 3x Run)
 - If the test touches asynchronous logic, timeouts, network mocks, date/time, or concurrency:
-  - Execute the test suite 3 consecutive times (`pnpm test --repeat=3`).
+  - Execute the test suite 3 consecutive times (`python -m unittest` 3x or `pnpm test --repeat=3`).
   - **PASS CRITERIA:** 3 out of 3 runs must return exit code 0.
 
 ### 4. Negative Fault Injection Pass (Mutation Resistance Check)
@@ -39,7 +39,7 @@ When refactoring legacy code without comprehensive pre-existing tests:
 - Revert temporary mutation back to Green state.
 
 ### 5. Dedicated Refactor Phase & Branch Coverage Gate (≥85%)
-- Modularize and clean code. Execute coverage runner (`pnpm test --coverage`). Verify ≥85% branch coverage on modified domain files (Checkpoint 4 `[x]`).
+- Modularize and clean code. Execute coverage runner (`coverage run -m unittest` / `pytest --cov` or `pnpm test --coverage`). Verify ≥85% branch coverage on modified domain files (Checkpoint 4 `[x]`).
 
 ### 6. SemVer & Public Contract Drift Guardian
 - Verify no exported signatures, schemas, or API contracts were broken without an approved Spec Amendment.
@@ -50,9 +50,11 @@ When refactoring legacy code without comprehensive pre-existing tests:
 
 ### 8. Upstream Staleness, Production Build & Global Regression
 - Verify local branch is not stale against upstream (`git log HEAD..origin/[main]`).
-- Run full repository test suite + typecheckers + linters.
-- **Production Build Sanity Check:** Execute production compilation command (`pnpm build`).
-- **Dependency Security Audit:** Execute `pnpm audit`. Assert zero high/critical vulnerabilities. Mark Checkpoint 6 as `[x]`.
+- Run full repository test suite + typecheckers + linters:
+  - Universal Quality Gates Runner: `python scripts/verify-all.py`
+  - Automated Unit Tests: `python -m unittest discover -s tests -v`
+- **Production Build Sanity Check:** Execute production compilation command (`pnpm run build` in `desktop/` or Python build).
+- **Dependency Security Audit:** Execute dependency scanner (`pnpm audit` / `pip-audit`). Assert zero high/critical vulnerabilities. Mark Checkpoint 6 as `[x]`.
 
 ### 9. Adversarial Red-Team Audit Pass (Side-Effects, Privacy, IaC Config, UI & DB Migrations)
 - Act as an antagonistic Red-Team auditor:

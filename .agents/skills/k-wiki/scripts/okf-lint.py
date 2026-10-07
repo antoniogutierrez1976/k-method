@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OKF (Open Knowledge Format) Graph Validator, Linter & Index Compiler v13.
+OKF (Open Knowledge Format) Graph Validator, Linter & Index Compiler v0.
 Validates YAML frontmatter (with full support for multi-line indented lists and quoted strings),
 broken wikilinks, orphan nodes, lifecycle integrity, and deterministically recompiles wiki/index.md.
 """

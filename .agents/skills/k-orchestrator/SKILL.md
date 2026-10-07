@@ -4,7 +4,7 @@ description: >-
   End-to-end master state-machine orchestrator binding Spec, Verifier, Environment, and LLM-Wiki into an enterprise-grade SDLC software engineering pipeline. Dispatches isolated subagents with zero-history context windows across the full lifecycle: Stage 0 forensic triage (with telemetry log truncation), /bugfix routing, PR feedback loops (/iterate), /chore for routine maintenance bypass, Threat Modeling (OWASP), Visual Regression Testing (VRT), Stash Shield guards, Git branch isolation, atomic rollbacks (/task-abort), token budgeting, MCP tooling, Strangler Fig migrations, Golden Master snapshots, flaky test immunity (3x run), Negative Fault Injection, deadlock circuit breakers, ≥85% branch coverage gates, CI build & dependency audit sanity, Zero-Downtime Database Migration protocols, config & IaC drift checks, upstream staleness checks, full global regression runs, automated OKF graph compilation, Tooling Anti-Sabotage guards, and Pull Request artifact generation.
 ---
 
-# Karpathy 3-Layer SDD Master Orchestrator (v16 Final Production Edition)
+# Karpathy 3-Layer SDD Master Orchestrator (v0 Production Edition)
 
 ## Architecture Overview
 Coordinates development according to Andrej Karpathy's 3 layers, hardened with ephemeral subagent isolation, deterministic local tooling, automated circuit breakers, flaky test elimination, workspace protection, and complete end-to-end SDLC lifecycle coverage:
@@ -58,7 +58,7 @@ Coordinates development according to Andrej Karpathy's 3 layers, hardened with e
   - Activates branch isolation (`git checkout -b feat/[name]`, `fix/[id]`, or `chore/[name]`). Supports atomic rollback via `/task-abort`.
   - Configures compact test flags (`--bail`, `--onlyFailures`).
   - Runs OKF linter to assert initial graph validity.
-  - Enforces **Tier 3 Tooling Protection**: Never edits files in skill scripts (`k-wiki/scripts/`) or `.claude/skills/` / `.agents/skills/`.
+  - Enforces **Tier 3 Tooling Protection**: Never edits files in skill scripts (`k-wiki/scripts/`) or `.agents/skills/` without explicit authorization.
 
 ### Stage 3: Verifier & Implementer (`k-verifier`)
 - **Context:** Fresh session. Reads ONLY `AGENTS.md` + spec artifact.
