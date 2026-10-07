@@ -6,6 +6,7 @@ from typing import Optional, Callable, List, Tuple
 from dataclasses import dataclass
 
 from scripts.harness.providers.base import BaseAgentProvider, AgentResponse
+from scripts.harness.engine.embedded_skills import get_embedded_directive
 
 
 class SDLCStage(Enum):
@@ -147,11 +148,7 @@ class KMethodEngine:
 
     async def execute_spec_stage(self, task_prompt: str) -> str:
         self.current_stage = SDLCStage.SPEC
-        system_prompt = (
-            "You are the k-spec architect. Draft a formal spec.md for the following task. "
-            "HARD LIMIT: You must NOT include more than 6 Acceptance Criteria (AC-1..AC-6). "
-            "Follow the spec-template strictly."
-        )
+        system_prompt = get_embedded_directive("k-spec")
         response: AgentResponse = await self.provider.chat_atomic(
             prompt=task_prompt, system_prompt=system_prompt
         )
@@ -177,7 +174,8 @@ class KMethodEngine:
         self.current_stage = SDLCStage.VERIFIER_RED
         # 1. Ask provider for failing test (Red phase)
         red_prompt = f"Write an automated test for criterion {ac_id}: {ac_desc}. Do not implement domain logic yet."
-        await self.provider.chat_atomic(prompt=red_prompt, system_prompt="Act as TDD verifier (Red phase).")
+        verifier_directive = get_embedded_directive("k-verifier")
+        await self.provider.chat_atomic(prompt=red_prompt, system_prompt=verifier_directive)
 
         exit_code, output = self.test_runner()
         if exit_code == 0:

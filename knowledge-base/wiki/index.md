@@ -1,10 +1,11 @@
 # Knowledge Base Index (OKF Graph)
-> Autogenerado deterministamente por `k-wiki/scripts/okf-lint.py --compile-index` el 2026-10-07 22:44.
+> Autogenerado deterministamente por `k-wiki/scripts/okf-lint.py --compile-index` el 2026-10-07 23:20.
 
 ## 1. Architectural Decisions (ADRs)
 - [[ADR-001-karpathy-3-layer-architecture]] (`active`) - *architecture*
 - [[ADR-002-multi-platform-ci-pr-strategy]] (`active`) - *ci-cd-governance*
 - [[ADR-003-dual-sdk-execution-harness]] (`active`) - *agentic-execution-harness*
+- [[ADR-004-antigravity-gui-and-embedded-skills]] (`active`) - *gui-architecture-and-embedded-skills*
 
 ## 2. Core Concepts & Domain Rules
 - [[environment-governor]] (`active`) - *layer-3-environment*
