@@ -637,7 +637,7 @@ function initUI() {
       const container = document.getElementById("chat-messages");
       if (container) {
         container.innerHTML = "";
-        appendUserOrAgentText("Hola. Soy el motor de **k-method** en Antigravity. Introduce una consulta o requerimiento para comenzar.", "agent");
+        appendUserOrAgentText("Hola. Soy el motor de **k-method app**. Introduce una consulta o requerimiento para comenzar.", "agent");
       }
       document.getElementById("approval-bar").classList.remove("active");
       currentStepCard = null;
@@ -750,7 +750,7 @@ function initUI() {
   }
 
   // Initial welcome greeting
-  appendUserOrAgentText("Hola. Soy el motor de **k-method** en Antigravity. Introduce una funcionalidad, corrección o consulta para comenzar.", "agent");
+  appendUserOrAgentText("Hola. Soy el motor de **k-method app**. Introduce una funcionalidad, corrección o consulta para comenzar.", "agent");
 }
 
 // Bootstrap
