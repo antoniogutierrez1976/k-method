@@ -79,10 +79,22 @@ def parse_args(args: Optional[List[str]] = None) -> RunnerConfig:
         help="Explicit Git task branch name (auto-generated if omitted)",
     )
 
-    parsed = parser.parse_args(args if args is not None else sys.argv[1:])
+    raw_args = args if args is not None else sys.argv[1:]
+    parsed = parser.parse_args(raw_args)
+
+    final_model = parsed.model
+    has_explicit_model = any(arg == "--model" or arg.startswith("--model=") for arg in raw_args)
+    if not has_explicit_model and "K_HARNESS_MODEL" not in os.environ:
+        if parsed.provider == "antigravity":
+            final_model = "gemini-2.5-flash"
+        elif parsed.provider == "copilot":
+            final_model = "gpt-6-luna"
+        elif parsed.provider == "mock":
+            final_model = "mock-model"
+
     return RunnerConfig(
         provider=parsed.provider,
-        model=parsed.model,
+        model=final_model,
         task=parsed.task,
         auto_approve=parsed.auto_approve,
         branch_name=parsed.branch,
