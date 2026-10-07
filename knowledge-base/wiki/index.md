@@ -1,5 +1,5 @@
 # Knowledge Base Index (OKF Graph)
-> Autogenerado deterministamente por `k-wiki/scripts/okf-lint.py --compile-index` el 2026-10-07 21:29.
+> Autogenerado deterministamente por `k-wiki/scripts/okf-lint.py --compile-index` el 2026-10-07 21:36.
 
 ## 1. Architectural Decisions (ADRs)
 - *Sin decisiones registradas.*

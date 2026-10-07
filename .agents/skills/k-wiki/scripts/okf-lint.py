@@ -9,6 +9,18 @@ import sys
 import re
 from datetime import datetime
 
+# Reconfigure stdout/stderr to utf-8 for Windows cp1252 / cmd / PowerShell compatibility
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 WIKI_DIR = os.path.join("knowledge-base", "wiki")
 
 def parse_frontmatter(content):
