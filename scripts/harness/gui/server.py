@@ -317,7 +317,7 @@ def create_app() -> FastAPI:
 
                     if provider_name == "mock":
                         mock_answer = (
-                            "k-method es una implementación empresarial de la metodología Karpathy v17 de 3 capas "
+                            "k-method es una implementación empresarial de la metodología Karpathy v0 de 3 capas "
                             "(Spec, Verifier, Environment) combinada con una base de conocimiento viva en Open Knowledge Format (OKF)."
                         )
                         await send_event("token", content=mock_answer)
@@ -326,7 +326,7 @@ def create_app() -> FastAPI:
                         query_system_prompt = (
                             "Eres el Asistente Experto de k-method. Responde a la consulta del usuario de forma directa, "
                             "clara y estructurada en español. Explica el funcionamiento según los estándares del proyecto "
-                            "(Karpathy v17, AGENTS.md, skills k-orchestrator, k-spec, k-verifier, k-environment, k-wiki, y la GUI app). "
+                            "(Karpathy v0, AGENTS.md, skills k-orchestrator, k-spec, k-verifier, k-environment, k-wiki, y la GUI app). "
                             "No generes especificaciones (spec.md) a menos que te pidan implementar una nueva funcionalidad."
                         )
                         resp = await provider.chat_atomic(

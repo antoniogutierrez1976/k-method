@@ -1,6 +1,6 @@
 """
 Embedded Skills Registry for k-method.
-Encapsulates and preserves Karpathy v17 methodology directives in memory,
+Encapsulates and preserves Karpathy v0 methodology directives in memory,
 enabling context injection without exposing raw markdown files in target workspaces.
 """
 from typing import Dict, List, Any, Optional
@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Optional
 EMBEDDED_SKILLS: Dict[str, Dict[str, Any]] = {
     "k-orchestrator": {
         "name": "k-orchestrator",
-        "version": "v17",
+        "version": "v0",
         "layer": "Master State Machine",
         "description": "Master orchestrator binding Spec, Verifier, Environment, and LLM-Wiki into an enterprise-grade SDLC pipeline.",
         "directive": (
@@ -24,7 +24,7 @@ EMBEDDED_SKILLS: Dict[str, Dict[str, Any]] = {
     },
     "k-spec": {
         "name": "k-spec",
-        "version": "v17",
+        "version": "v0",
         "layer": "Layer 1 - Spec",
         "description": "Enforces Layer 1 (Spec) of Karpathy's method. Halts premature code generation and mandates max 6 ACs.",
         "directive": (
@@ -86,7 +86,7 @@ EMBEDDED_SKILLS: Dict[str, Dict[str, Any]] = {
     },
     "k-verifier": {
         "name": "k-verifier",
-        "version": "v17",
+        "version": "v0",
         "layer": "Layer 2 - Verifier",
         "description": "Enforces Layer 2 (Verifier) of Karpathy's method. Executes full Red-Green-Refactor TDD cycle and circuit breakers.",
         "directive": (
@@ -100,7 +100,7 @@ EMBEDDED_SKILLS: Dict[str, Dict[str, Any]] = {
     },
     "k-environment": {
         "name": "k-environment",
-        "version": "v17",
+        "version": "v0",
         "layer": "Layer 3 - Environment",
         "description": "Enforces Layer 3 (Environment). Scaffolds AGENTS.md, enforces Stash Shield and atomic rollback.",
         "directive": (
@@ -113,7 +113,7 @@ EMBEDDED_SKILLS: Dict[str, Dict[str, Any]] = {
     },
     "k-wiki": {
         "name": "k-wiki",
-        "version": "v17",
+        "version": "v0",
         "layer": "Knowledge Base (OKF)",
         "description": "Implements Open Knowledge Format (OKF) on top of Karpathy's llm-wiki architecture. Manages typed nodes and ADRs.",
         "directive": (

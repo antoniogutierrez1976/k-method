@@ -62,7 +62,7 @@ class TestGUIBackendAPI(unittest.TestCase):
 
     def test_AC_1_embedded_skills_registry(self):
         """
-        AC-1: Embedded skills registry provides complete Karpathy v17 directives in memory.
+        AC-1: Embedded skills registry provides complete Karpathy v0 directives in memory.
         """
         skills = list_embedded_skills()
         self.assertGreaterEqual(len(skills), 5, "Must contain all 5 core Karpathy skills")

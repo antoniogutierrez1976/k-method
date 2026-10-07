@@ -61,7 +61,7 @@ The repository provides both an interactive Graphical Webview (**k-method app**,
 ### 1. k-method app Graphical Studio (`run-gui.ps1` / `scripts/harness/gui/launch.py`)
 
 A modern, dark-mode 3-column desktop/browser application (**k-method app**):
-- **Left Sidebar:** Workspace selector, LLM provider & model switcher, and embedded Karpathy v17 skills catalog.
+- **Left Sidebar:** Workspace selector, LLM provider & model switcher, and embedded Karpathy v0 skills catalog.
 - **Central Chat Canvas:** Real-time token streaming, state badge progression, and human-in-the-loop spec approval action bar.
 - **Right Auxiliary Pane:** Tabbed views for *Artifacts* (`spec.md` & PR description), *Files Changed* (live Git diff), *TDD Verifier* (test logs), and *OKF Graph*.
 

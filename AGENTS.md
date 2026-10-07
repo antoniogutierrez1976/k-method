@@ -1,7 +1,7 @@
 # Project Constitution: AGENTS.md
 
 ## 1. Tech Stack & Environment
-- **Project Purpose:** `k-method` - Enterprise-grade Karpathy 3-Layer Skills Pack v17 for Agentic SDLC.
+- **Project Purpose:** `k-method` - Enterprise-grade Karpathy 3-Layer Skills Pack v0 for Agentic SDLC.
 - **Runtimes & Tooling:** Python 3.10+ (standard library only for OKF compiler), PowerShell / Bash, Git.
 - **Standards:** Google Antigravity Skills & Anthropic Agent Skills specifications.
 - **Skill Locations:** `.agents/skills/k-*` (Self-contained skills).

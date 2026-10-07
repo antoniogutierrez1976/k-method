@@ -27,7 +27,7 @@ class TestIntentClassifier(unittest.IsolatedAsyncioTestCase):
             "dónde se guardan los specs?",
             "cuéntame sobre la arquitectura",
             "what does this repo do?",
-            "explain Karpathy v17",
+            "explain Karpathy v0",
             "para qué sirve el orchestrator",
         ]
         for q in queries:

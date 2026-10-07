@@ -1,7 +1,7 @@
 # Spec: Phase 1 - GUI Backend API & Real-time Event Streaming (`01-gui-backend-api`)
 
 ## 1. Goal & Context
-- **Business Rationale:** Proveer la capa de backend de comunicación en tiempo real y gestión de contexto embebido para la aplicación gráfica de Antigravity 2.0. El backend debe encapsular e inyectar las directivas de las 5 skills de Karpathy v17 en memoria, garantizando la reserva y privacidad metodológica sin requerir `.agents/skills/` en repositorios destino, y orquestar el bucle SDLC vía WebSocket/REST.
+- **Business Rationale:** Proveer la capa de backend de comunicación en tiempo real y gestión de contexto embebido para la aplicación gráfica de k-method app. El backend debe encapsular e inyectar las directivas de las 5 skills de Karpathy v0 en memoria, garantizando la reserva y privacidad metodológica sin requerir `.agents/skills/` en repositorios destino, y orquestar el bucle SDLC vía WebSocket/REST.
 - **User Story:** Como operador de la aplicación gráfica `k-windows-gui`, quiero que el backend gestione la conexión WebSocket, el streaming de tokens, la notificación de aprobaciones humanas requeridas y la inyección segura de las directivas de Karpathy en el LLM, para que la interfaz web reaccione en tiempo real sin bloquear el hilo ni exponer las directivas como archivos sueltos en el workspace.
 - **Git Branch Target:** `feat/windows-gui-backend-api`
 
@@ -13,7 +13,7 @@ The implementation must explicitly NOT:
 
 ## 3. Technical Contract & Architecture
 - **Embedded Skills Directives Registry (`scripts/harness/engine/embedded_skills.py`):**
-  - Módulo que almacena internamente las especificaciones canónicas de Karpathy v17:
+  - Módulo que almacena internamente las especificaciones canónicas de Karpathy v0:
     - `k-orchestrator`, `k-spec`, `k-verifier`, `k-environment`, `k-wiki`.
   - API: `get_embedded_directive(skill_name: str) -> str` y `list_embedded_skills() -> list[dict]`.
 - **FastAPI / Starlette Server (`scripts/harness/gui/server.py`):**
@@ -43,7 +43,7 @@ The implementation must explicitly NOT:
 
 ## 5. Verifiable Acceptance Criteria (Bidirectional Traceability Matrix)
 - [x] **AC-Sec-1:** Sanitización y redacción de credenciales en todos los eventos emitidos por WebSocket y endpoints REST. (Verified by: `tests/test_gui_backend_api.py::test_AC_Sec_1_credential_redaction_in_api`)
-- [x] **AC-1 (Happy Path - Embedded Skills Registry):** El registro embebido provee las directivas completas de las 5 skills de Karpathy v17 y `KMethodEngine` las inyecta en el contexto sin requerir archivos en `.agents/skills/`. (Verified by: `tests/test_gui_backend_api.py::test_AC_1_embedded_skills_registry`)
+- [x] **AC-1 (Happy Path - Embedded Skills Registry):** El registro embebido provee las directivas completas de las 5 skills de Karpathy v0 y `KMethodEngine` las inyecta en el contexto sin requerir archivos en `.agents/skills/`. (Verified by: `tests/test_gui_backend_api.py::test_AC_1_embedded_skills_registry`)
 - [x] **AC-2 (Happy Path - REST Endpoints):** Endpoints `/api/status`, `/api/diff`, y `/api/skills` devuelven el estado del workspace, diff de git y catálogo de directivas con código HTTP 200. (Verified by: `tests/test_gui_backend_api.py::test_AC_2_rest_endpoints`)
 - [x] **AC-3 (Happy Path - WebSocket Execution Protocol):** Una conexión WebSocket a `/ws/sdlc` permite iniciar una ejecución con proveedor mock y recibe la secuencia ordenada de eventos atómicos (`stage_changed`, `token`, etc.). (Verified by: `tests/test_gui_backend_api.py::test_AC_3_websocket_execution_protocol`)
 - [x] **AC-4 (Boundary - Interactive Approval Gate via WS):** Al alcanzar la fase `SPEC`, el backend emite `approval_required`, pausa la ejecución y se reanuda únicamente tras recibir `approval_response` del cliente. (Verified by: `tests/test_gui_backend_api.py::test_AC_4_interactive_approval_gate_via_ws`)
