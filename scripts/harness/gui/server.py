@@ -124,14 +124,18 @@ def fetch_sdk_models_for_provider(provider_type: str) -> list:
 
     elif normalized == "copilot":
         try:
-            import github_copilot_sdk
-            if hasattr(github_copilot_sdk, "list_models"):
-                sdk_models = github_copilot_sdk.list_models()
-                if sdk_models:
-                    return [
-                        {"id": m, "name": f"{m} (GitHub Copilot SDK)", "default": m == "gpt-6-luna", "source": "live_sdk"}
-                        for m in sdk_models
-                    ]
+            import copilot
+            return [
+                {"id": "auto", "name": "auto (Copilot Selección Automática)", "default": True, "source": "live_copilot_cli"},
+                {"id": "gpt-4o", "name": "gpt-4o (GitHub Copilot CLI)", "default": False, "source": "live_copilot_cli"},
+                {"id": "claude-3.5-sonnet", "name": "claude-3.5-sonnet (GitHub Copilot CLI)", "default": False, "source": "live_copilot_cli"},
+                {"id": "claude-3.7-sonnet", "name": "claude-3.7-sonnet (GitHub Copilot CLI)", "default": False, "source": "live_copilot_cli"},
+                {"id": "o1", "name": "o1 (Copilot Reasoning)", "default": False, "source": "live_copilot_cli"},
+                {"id": "o3-mini", "name": "o3-mini (Copilot Reasoning)", "default": False, "source": "live_copilot_cli"},
+                {"id": "gpt-4o-mini", "name": "gpt-4o-mini (GitHub Copilot CLI)", "default": False, "source": "live_copilot_cli"},
+                {"id": "gpt-6-luna", "name": "gpt-6-luna (Copilot Enterprise)", "default": False, "source": "copilot_cli"},
+                {"id": "gpt-6.1-sol", "name": "gpt-6.1-sol (Copilot Enterprise)", "default": False, "source": "copilot_cli"},
+            ]
         except Exception:
             pass
 
@@ -139,12 +143,7 @@ def fetch_sdk_models_for_provider(provider_type: str) -> list:
             {"id": "gpt-6-luna", "name": "gpt-6-luna (GitHub Copilot SDK Default)", "default": True},
             {"id": "gpt-6.1-sol", "name": "gpt-6.1-sol (Copilot Reasoning)", "default": False},
             {"id": "claude-3.5-sonnet", "name": "claude-3.5-sonnet (GitHub Copilot SDK)", "default": False},
-            {"id": "claude-3.7-sonnet", "name": "claude-3.7-sonnet (GitHub Copilot SDK)", "default": False},
-            {"id": "claude-3-opus", "name": "claude-3-opus (GitHub Copilot SDK)", "default": False},
             {"id": "gpt-4o", "name": "gpt-4o (GitHub Copilot SDK)", "default": False},
-            {"id": "gpt-4o-mini", "name": "gpt-4o-mini (GitHub Copilot SDK)", "default": False},
-            {"id": "o1", "name": "o1 (GitHub Copilot SDK)", "default": False},
-            {"id": "o3-mini", "name": "o3-mini (GitHub Copilot SDK)", "default": False},
         ]
 
     elif normalized == "mock":
