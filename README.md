@@ -54,11 +54,28 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 - **Strangler Fig / Expand & Contract Template:** Breaking changes without downtime.
 - **Subagent Context Isolation:** Master supervisor state machine with zero-history context windows.
 
-## CLI Tools & Execution Harness
+## Graphical & CLI Tools
 
-The repository provides deterministic CLI tools and an interactive Windows-tailored execution harness implementing the **"Code > Prompt"** pattern.
+The repository provides both an interactive Antigravity 2.0 Graphical Webview and deterministic CLI tools implementing the **"Code > Prompt"** pattern.
 
-### 1. Interactive Windows Skills Runner (`k_runner.py` / `run-harness.ps1`)
+### 1. Antigravity 2.0 Webview GUI (`run-gui.ps1` / `scripts/harness/gui/launch.py`)
+
+A modern, dark-mode 3-column desktop/browser application replicating **Antigravity 2.0**:
+- **Left Sidebar:** Workspace selector, LLM provider & model switcher, and embedded Karpathy v17 skills catalog.
+- **Central Chat Canvas:** Real-time token streaming, state badge progression, and human-in-the-loop spec approval action bar.
+- **Right Auxiliary Pane:** Tabbed views for *Artifacts* (`spec.md` & PR description), *Files Changed* (live Git diff), *TDD Verifier* (test logs), and *OKF Graph*.
+
+```powershell
+# Launch Antigravity 2.0 Webview (auto-opens browser at http://127.0.0.1:8000):
+.\run-gui.ps1
+
+# Custom port or headless background mode:
+.\run-gui.ps1 -Port 8080 -NoBrowser
+```
+
+---
+
+### 2. Interactive Windows Skills Runner CLI (`k_runner.py` / `run-harness.ps1`)
 
 An interactive terminal application with Antigravity-style ANSI visual presentation (header banners, auxiliary status panels, human approval gates, and deadlock circuit breaker alerts).
 
