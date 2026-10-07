@@ -8,6 +8,10 @@
 
 ## 2. Available Execution Interfaces (CLI)
 ### Standard CLI Commands
+- Skills & OKF Graph Automated Test Suite:
+  ```bash
+  python -m unittest discover -s tests -v
+  ```
 - OKF Graph Lint & Recompile Index:
   ```bash
   python .agents/skills/k-wiki/scripts/okf-lint.py --compile-index
