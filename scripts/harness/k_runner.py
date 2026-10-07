@@ -11,6 +11,11 @@ import sys
 from dataclasses import dataclass
 from typing import Optional, List, Callable, Tuple
 
+# Ensure repository root is on sys.path when invoked directly
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 # Ensure UTF-8 output on Windows terminal
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -118,6 +123,11 @@ async def run_pipeline_cli(
     except Exception as e:
         print(f"\n❌ Error al instanciar el proveedor '{config.provider}': {e}")
         return 1
+
+    # For mock provider, use a simulated Red->Green runner if none provided
+    if config.provider == "mock" and test_runner is None:
+        from unittest.mock import MagicMock
+        test_runner = MagicMock(side_effect=[(1, "Simulated Red failure"), (0, "Simulated Green pass")])
 
     def approval_wrapper(spec_text: str) -> bool:
         return prompt_human_approval(spec_text, auto_approve=config.auto_approve)

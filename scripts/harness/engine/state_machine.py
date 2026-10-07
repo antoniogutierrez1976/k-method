@@ -52,9 +52,12 @@ class StashShield:
             cwd=cwd,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             shell=False,
         )
-        return len(res.stdout.strip()) == 0
+        stdout = res.stdout or ""
+        return len(stdout.strip()) == 0
 
     def checkout_branch(self, branch_name: str, cwd: Optional[str] = None, create: bool = True) -> int:
         safe_branch = self.sanitize_branch_name(branch_name)
@@ -133,9 +136,13 @@ class KMethodEngine:
             [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             shell=False,
         )
-        output = res.stdout + "\n" + res.stderr
+        stdout = res.stdout or ""
+        stderr = res.stderr or ""
+        output = stdout + "\n" + stderr
         return res.returncode, output
 
     async def execute_spec_stage(self, task_prompt: str) -> str:
@@ -205,10 +212,13 @@ class KMethodEngine:
             [sys.executable, linter_script],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             shell=False,
         )
         if res.returncode != 0:
-            raise EngineError(f"OKF knowledge graph verification failed: {res.stderr}")
+            stderr = res.stderr or ""
+            raise EngineError(f"OKF knowledge graph verification failed: {stderr}")
 
         # 2. Draft PR description
         pr_prompt = f"Draft a Pull Request description for completed feature '{feature_name}' using pull-request.template.md."
