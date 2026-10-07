@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity 2.0 - k-method SDLC Engine</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- 1. Left Sidebar -->
+    <aside id="sidebar-left">
+      <div class="brand-header">
+        <span>🚀 Antigravity 2.0</span>
+      </div>
+
+      <div class="control-group">
+        <label>Workspace</label>
+        <div style="font-size: 0.9rem; font-weight: 600;" id="workspace-label">k-method</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Rama: <span id="branch-label">main</span></div>
+        <div style="margin-top: 4px;">
+          <span id="stash-shield-status" class="status-badge clean">🛡️ Stash Shield</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="provider-select">Proveedor de LLM</label>
+        <select id="provider-select">
+          <option value="antigravity">Google Antigravity SDK</option>
+          <option value="copilot">GitHub Copilot SDK</option>
+          <option value="mock">Offline Mock Provider</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="model-select">Modelo Destino</label>
+        <select id="model-select">
+          <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+          <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+          <option value="gemini-3.8-flash">gemini-3.8-flash (SDK Default)</option>
+          <option value="gpt-6-luna">gpt-6-luna (Copilot)</option>
+          <option value="gpt-6.1-sol">gpt-6.1-sol (Copilot)</option>
+        </select>
+      </div>
+
+      <div class="control-group" style="flex: 1; overflow: hidden;">
+        <label>Skills Embebidas (Karpathy v17)</label>
+        <div id="skills-list" class="skills-container">
+          <!-- Loaded dynamically from /api/skills -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. Central Chat Canvas -->
+    <main id="chat-canvas">
+      <header class="canvas-header">
+        <span style="font-weight: 600; font-size: 0.9rem;">Chat Canvas &amp; SDLC State</span>
+        <span id="active-stage-pill" class="stage-pill">INICIALIZACIÓN</span>
+      </header>
+
+      <section id="chat-messages">
+        <div class="message-bubble agent">
+          Hola. Soy el motor de orquestación de <strong>k-method</strong>. Escribe una tarea para iniciar el ciclo SDLC de Karpathy (Spec &rarr; Stash Shield &rarr; TDD &rarr; OKF).
+        </div>
+      </section>
+
+      <!-- Human-in-the-loop Approval Action Bar -->
+      <section id="approval-bar">
+        <div style="font-weight: 600; color: var(--accent-amber); display: flex; align-items: center; gap: 6px;">
+          ✋ Aprobación Humana Requerida: Se ha generado la especificación (spec.md).
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Revisa los criterios de aceptación en la pestaña <em>Artifacts</em> del panel derecho antes de autorizar el ciclo TDD.
+        </p>
+        <div class="approval-actions">
+          <button id="btn-approve" class="btn btn-approve">Aprobar y Ejecutar TDD</button>
+          <button id="btn-revise" class="btn btn-revise">Rechazar / Solicitar Revisión</button>
+        </div>
+      </section>
+
+      <footer class="chat-input-area">
+        <form id="task-form" class="chat-input-wrapper">
+          <input type="text" id="task-input" placeholder="Describe la funcionalidad o corrección (ej: 'Implementar endpoint de métricas')..." autocomplete="off">
+          <button type="submit">Ejecutar</button>
+        </form>
+      </footer>
+    </main>
+
+    <!-- 3. Right Auxiliary Pane -->
+    <aside id="auxiliary-pane">
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="artifacts">📑 Artifacts</button>
+        <button class="tab-btn" data-tab="diff">🔄 Diff</button>
+        <button class="tab-btn" data-tab="tdd">🧪 TDD</button>
+        <button class="tab-btn" data-tab="okf">📚 OKF</button>
+      </nav>
+
+      <div id="tab-content-artifacts" class="tab-content active">
+        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Especificación / Pull Request</div>
+        <pre id="artifacts-viewer">(Ningún artefacto generado todavía)</pre>
+      </div>
+
+      <div id="tab-content-diff" class="tab-content">
+        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Git Working Tree Diff</div>
+        <pre id="diff-viewer">(Sin modificaciones pendientes)</pre>
+      </div>
+
+      <div id="tab-content-tdd" class="tab-content">
+        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Salida del Verifier (Red / Green)</div>
+        <pre id="tdd-viewer">(Esperando inicio del ciclo TDD...)</pre>
+      </div>
+
+      <div id="tab-content-okf" class="tab-content">
+        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Grafo de Conocimiento OKF</div>
+        <pre id="okf-viewer">ADR-001: Karpathy 3-Layer Architecture&#10;ADR-002: Multi-Platform CI PR Strategy&#10;ADR-003: Dual SDK Execution Harness&#10;ADR-004: Antigravity GUI and Embedded Skills</pre>
+      </div>
+    </aside>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

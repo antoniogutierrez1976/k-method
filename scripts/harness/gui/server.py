@@ -11,7 +11,8 @@ import time
 from typing import Optional, Dict, Any, Callable
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from starlette.staticfiles import StaticFiles
 
 # Ensure repo root is on sys.path
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -62,6 +63,15 @@ def get_git_diff() -> str:
 def create_app() -> FastAPI:
     app = FastAPI(title="k-method Antigravity 2.0 Backend", version="1.0.0")
     stash_shield = StashShield()
+
+    static_dir = os.path.join(os.path.dirname(__file__), "static")
+    if os.path.exists(static_dir):
+        app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+    @app.get("/")
+    async def get_root():
+        index_path = os.path.join(static_dir, "index.html")
+        return FileResponse(index_path, media_type="text/html")
 
     @app.get("/api/status")
     async def get_status():
