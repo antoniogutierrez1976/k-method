@@ -1,267 +1,475 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>k-method app - SDLC Studio</title>
+  <title>Antigravity - k-method app</title>
   <link rel="stylesheet" href="/static/style.css">
   <!-- Marked.js for rich Markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-  <div id="app-container">
+  <div id="antigravity-window">
     <!-- =================================================================== -->
-    <!-- 1. Left Sidebar (k-method System)                                   -->
+    <!-- Window Top Menu & Native Titlebar                                   -->
     <!-- =================================================================== -->
-    <aside id="sidebar-left">
-      <!-- Brand Header -->
-      <div class="brand-header">
-        <div class="brand-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <span class="brand-title">k-method app</span>
-        <span class="brand-version">v17</span>
-      </div>
-
-      <!-- Workspace Card with Stash Shield -->
-      <div class="workspace-card">
-        <span class="workspace-label">Entorno de Trabajo</span>
-        <div class="workspace-name-row">
-          <div class="workspace-name">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span id="workspace-label">k-method</span>
-          </div>
-          <div class="branch-chip">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="6" y1="3" x2="6" y2="15"/>
-              <circle cx="18" cy="6" r="3"/>
-              <circle cx="6" cy="18" r="3"/>
-              <path d="M18 9a9 9 0 0 1-9 9"/>
-            </svg>
-            <span id="branch-label">main</span>
-          </div>
-        </div>
-        <div id="stash-shield-status" class="status-badge clean">
-          <span class="status-dot"></span>
-          <span>🛡️ Stash Shield</span>
-        </div>
-      </div>
-
-      <!-- Provider Selector -->
-      <div class="control-group">
-        <label for="provider-select">Proveedor de LLM</label>
-        <select id="provider-select" class="control-select">
-          <option value="antigravity">Google Antigravity SDK</option>
-          <option value="copilot">GitHub Copilot SDK</option>
-          <option value="mock">Offline Mock Provider</option>
-        </select>
-      </div>
-
-      <!-- Model Selector -->
-      <div class="control-group">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <label for="model-select">Modelo Destino (SDK)</label>
-          <button id="btn-refresh-models" type="button" title="Refrescar modelos disponibles desde el SDK" style="background: none; border: none; color: var(--gemini-cyan); font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <span>↻ Refrescar SDK</span>
+    <header id="window-titlebar">
+      <div class="titlebar-left">
+        <span class="app-brand-title">Antigravity</span>
+        <nav class="titlebar-menu-items">
+          <span class="menu-item">File</span>
+          <span class="menu-item">View</span>
+          <span class="menu-item">Window</span>
+        </nav>
+        <div class="titlebar-nav-arrows">
+          <button type="button" class="titlebar-btn" id="btn-toggle-sidebar" title="Alternar Barra Lateral">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          </button>
+          <button type="button" class="titlebar-btn" id="btn-nav-back" title="Atrás">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button type="button" class="titlebar-btn" id="btn-nav-fwd" title="Adelante">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
-        <select id="model-select" class="control-select">
-          <!-- Populated dynamically from SDK -->
-        </select>
-        <input type="text" id="custom-model-input" placeholder="Escribe el ID del modelo (ej: gemini-2.0-flash-exp)..." style="display: none; margin-top: 6px; background-color: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; font-size: 0.82rem; font-family: var(--font-mono); outline: none;">
       </div>
-
-      <!-- Embedded Skills Container -->
-      <div class="control-group" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-        <label>Skills Embebidas (Karpathy v17)</label>
-        <div id="skills-list" class="skills-container">
-          <!-- Dynamically populated from /api/skills -->
+      <div class="titlebar-center">
+        <span class="titlebar-window-label">k-method app &bull; SDLC Studio</span>
+      </div>
+      <div class="titlebar-right">
+        <button type="button" id="btn-theme-toggle" class="titlebar-btn" title="Alternar Modo Oscuro/Claro">
+          <span id="theme-toggle-icon">🌓</span>
+        </button>
+        <div class="window-actions">
+          <span class="win-btn">─</span>
+          <span class="win-btn">□</span>
+          <span class="win-btn win-close">✕</span>
         </div>
       </div>
-    </aside>
+    </header>
 
     <!-- =================================================================== -->
-    <!-- 2. Central Chat Canvas (Google Gemini & Antigravity Style)         -->
+    <!-- 3-Column Antigravity Layout                                         -->
     <!-- =================================================================== -->
-    <main id="chat-canvas">
-      <header class="canvas-header">
-        <div class="canvas-header-left">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gemini-cyan);">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-          <span class="canvas-title">SDLC Orchestration Canvas</span>
-        </div>
-        <div id="active-stage-pill" class="stage-pill">
-          <span class="status-dot"></span>
-          <span>INICIALIZACIÓN</span>
-        </div>
-      </header>
-
-      <section id="chat-messages">
-        <div class="message-row agent">
-          <div class="message-avatar agent-avatar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-          </div>
-          <div class="message-bubble agent">
-            Hola. Soy el motor de orquestación de <strong>k-method</strong> con directivas Karpathy v17 inyectadas en memoria.<br>
-            Introduce una funcionalidad o corrección en el canvas inferior para ejecutar el ciclo (<em>Spec &rarr; Stash Shield &rarr; TDD Red-Green &rarr; OKF</em>).
-          </div>
-        </div>
-      </section>
-
-      <!-- Human-in-the-loop Approval Action Bar -->
-      <section id="approval-bar">
-        <div class="approval-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          <span>Aprobación Humana Requerida: Especificación (spec.md) Lista</span>
-        </div>
-        <div class="approval-desc">
-          Revisa los Criterios de Aceptación (máx. 6 ACs) en la pestaña <strong>Artifacts</strong> del panel lateral derecho antes de autorizar el ciclo TDD.
-        </div>
-        <div class="approval-actions">
-          <button id="btn-approve" class="btn btn-approve">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>Aprobar y Ejecutar TDD</span>
+    <div id="antigravity-layout">
+      <!-- 1. LEFT SIDEBAR (Navigation & Projects) -->
+      <aside id="sidebar-left">
+        <div class="sidebar-top-section">
+          <!-- + New Conversation Button -->
+          <button type="button" id="btn-new-conversation" class="btn-new-conversation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>New Conversation</span>
           </button>
-          <button id="btn-revise" class="btn btn-revise">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-            <span>Rechazar / Solicitar Revisión</span>
+
+          <!-- Main Nav Links -->
+          <nav class="sidebar-nav-list">
+            <a href="#" class="sidebar-nav-item active" id="nav-history">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>Conversation History</span>
+            </a>
+            <a href="#" class="sidebar-nav-item" id="nav-scheduled">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Scheduled Tasks</span>
+            </a>
+            <a href="#" class="sidebar-nav-item" id="nav-customizations">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>Customizations</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Projects Tree Section -->
+        <div class="sidebar-projects-section">
+          <div class="projects-header">
+            <span>Projects</span>
+            <div class="projects-header-actions">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+
+          <div class="projects-list">
+            <!-- Active Project: k-method -->
+            <div class="project-folder open">
+              <div class="project-folder-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="project-folder-title">k-method</span>
+              </div>
+              <div class="project-conversations">
+                <div class="conv-row active" id="conv-active">
+                  <span class="conv-indicator"></span>
+                  <span class="conv-name">Debugging Skills Loop With ChatGPT</span>
+                </div>
+                <div class="conv-row">
+                  <span class="conv-name">Karpathy 3-Layer Skills Project</span>
+                  <span class="conv-meta">2h</span>
+                </div>
+                <div class="conv-row">
+                  <span class="conv-name">Iniciar El Entorno</span>
+                  <span class="conv-meta">3h</span>
+                </div>
+                <div class="conv-row">
+                  <span class="conv-name">Inicia La Wiki</span>
+                  <span class="conv-meta">3h</span>
+                </div>
+                <div class="conv-row">
+                  <span class="conv-name">Revisión Del Estado Del Proyecto</span>
+                  <span class="conv-meta">3h</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other Projects in Tree (matching Antigravity screenshot) -->
+            <div class="project-folder collapsed">
+              <div class="project-folder-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="project-folder-title">salesforce-org-status</span>
+              </div>
+            </div>
+            <div class="project-folder collapsed">
+              <div class="project-folder-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="project-folder-title">salesforce-dev-console</span>
+              </div>
+            </div>
+            <div class="project-folder collapsed">
+              <div class="project-folder-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="project-folder-title">triage</span>
+              </div>
+            </div>
+            <div class="project-folder collapsed">
+              <div class="project-folder-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="project-folder-title">CLI Project</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden / Accessible Engine Controls for Test Suite Contract & Settings -->
+        <div id="engine-config-drawer" class="engine-config-drawer">
+          <div class="control-row">
+            <label for="provider-select">Proveedor SDK</label>
+            <select id="provider-select" class="form-select-sm">
+              <option value="antigravity">Google Antigravity SDK</option>
+              <option value="copilot">GitHub Copilot SDK</option>
+              <option value="mock">Offline Mock Provider</option>
+            </select>
+          </div>
+          <div class="control-row">
+            <div class="label-with-btn">
+              <label for="model-select">Modelo Destino</label>
+              <button type="button" id="btn-refresh-models" class="btn-link-action" title="Refrescar modelos">↻ Refrescar</button>
+            </div>
+            <select id="model-select" class="form-select-sm"></select>
+            <input type="text" id="custom-model-input" placeholder="ID personalizado..." style="display: none;">
+          </div>
+          <div id="skills-list" style="display: none;"></div>
+          <div id="stash-shield-status" class="status-badge clean" style="display: none;">
+            <span class="status-dot"></span><span>🛡️ Stash Shield</span>
+          </div>
+          <span id="workspace-label" style="display: none;">k-method</span>
+          <span id="branch-label" style="display: none;">main</span>
+        </div>
+
+        <!-- Sidebar Bottom Settings Button -->
+        <div class="sidebar-bottom-bar">
+          <button type="button" id="btn-settings-dialog" class="btn-sidebar-footer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Settings</span>
           </button>
         </div>
-      </section>
+      </aside>
 
-      <!-- Floating Gemini-style Input Canvas -->
-      <footer class="chat-input-area">
-        <form id="task-form" class="chat-input-wrapper">
-          <input type="text" id="task-input" placeholder="Escribe tu requerimiento (ej: 'Implementar endpoint de salud y métricas Prometheus')..." autocomplete="off">
-          <button type="submit" class="btn-send" title="Ejecutar tarea">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </button>
-        </form>
-      </footer>
-    </main>
+      <!-- 2. CENTER CANVAS (Breadcrumbs, Chat & Floating Input) -->
+      <main id="chat-canvas">
+        <!-- Top Breadcrumb Header -->
+        <header class="canvas-breadcrumb-header">
+          <div class="breadcrumb-trail">
+            <span class="crumb-project">k-method</span>
+            <span class="crumb-slash">/</span>
+            <span id="breadcrumb-conversation" class="crumb-conversation">Debugging Skills Loop With ChatGPT</span>
+          </div>
+
+          <div class="breadcrumb-actions">
+            <button type="button" id="btn-restart-update" class="btn-blue-pill">
+              <span>Restart to Update</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+            <button type="button" class="btn-circle-icon" title="Opciones">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            </button>
+            <button type="button" id="btn-open-ide" class="btn-outline-pill">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 22 22 22"/></svg>
+              <span>Open IDE</span>
+            </button>
+            <div id="active-stage-pill" class="stage-pill-compact" style="display: none;">
+              <span class="status-dot"></span><span>INICIALIZACIÓN</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Messages & Collapsible Step Cards Container -->
+        <section id="chat-messages" class="chat-scroll-area">
+          <!-- Initial agent greeting or loaded steps -->
+        </section>
+
+        <!-- Human-in-the-Loop Spec Approval Action Bar -->
+        <section id="approval-bar">
+          <div class="approval-header-row">
+            <div class="approval-title-text">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span>Aprobación de Especificación Formal (spec.md) Requerida</span>
+            </div>
+            <div class="approval-actions-group">
+              <button type="button" id="btn-approve" class="btn-action-approve">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Aprobar y Ejecutar TDD</span>
+              </button>
+              <button type="button" id="btn-revise" class="btn-action-revise">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Rechazar / Solicitar Revisión</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Antigravity / Gemini Floating Input Box -->
+        <footer class="floating-input-wrapper">
+          <form id="task-form" class="floating-input-box">
+            <textarea id="task-input" placeholder="Ask anything, @ to mention, / for actions" rows="1"></textarea>
+
+            <div class="input-controls-bar">
+              <div class="input-controls-left">
+                <button type="button" class="btn-pill-icon" title="Añadir adjunto o contexto">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+
+                <!-- Model Selector Pill (Interactive Dropdown) -->
+                <div class="model-pill-container">
+                  <button type="button" id="btn-model-pill" class="btn-model-dropdown">
+                    <span class="sparkle-spark">✨</span>
+                    <span id="model-pill-label">Gemini 2.5 Flash</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+
+                  <!-- Floating Model Selector Card -->
+                  <div id="model-picker-card" class="model-picker-card hidden">
+                    <div class="picker-tabs-row">
+                      <button type="button" class="tab-btn-mini active" data-prov="antigravity">Antigravity</button>
+                      <button type="button" class="tab-btn-mini" data-prov="copilot">Copilot</button>
+                      <button type="button" class="tab-btn-mini" data-prov="mock">Mock</button>
+                    </div>
+                    <div id="picker-models-list" class="picker-models-list"></div>
+                    <div class="picker-custom-row">
+                      <input type="text" id="picker-custom-input" placeholder="Escribir modelo personalizado...">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-controls-right">
+                <button type="button" class="btn-pill-icon" title="Entrada por voz">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </button>
+                <button type="submit" id="btn-send-task" class="btn-submit-circle" title="Enviar mensaje">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
+            </div>
+          </form>
+        </footer>
+      </main>
+
+      <!-- 3. RIGHT SIDEBAR (Inspection & Workspace Context) -->
+      <aside id="auxiliary-pane">
+        <!-- Top Toolbar -->
+        <header class="inspector-header">
+          <div class="inspector-header-left">
+            <button type="button" class="icon-btn-ghost" title="Dock / Undock">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            </button>
+            <button type="button" class="icon-btn-ghost" title="Vista de archivos">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            </button>
+          </div>
+          <div class="inspector-header-right">
+            <button type="button" class="icon-btn-ghost" title="Añadir"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button type="button" class="icon-btn-ghost" title="Pantalla completa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          </div>
+        </header>
+
+        <!-- Inspector Accordion List -->
+        <div class="inspector-scroll-area">
+          <!-- Accordion 1: Subagents -->
+          <div class="inspector-accordion" id="acc-subagents">
+            <div class="accordion-head">
+              <span class="accordion-label">Subagents <span class="badge-count">0</span></span>
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div class="accordion-panel hidden">
+              <p class="empty-note">No hay subagentes concurrentes activos.</p>
+            </div>
+          </div>
+
+          <!-- Accordion 2: Files Changed -->
+          <div class="inspector-accordion open" id="acc-files-changed" data-tab="diff">
+            <div class="accordion-head">
+              <div class="head-left-group">
+                <span class="accordion-label">Files Changed <span id="files-changed-badge" class="badge-count">0</span></span>
+                <span class="pill-uncommitted">Uncommitted ▾</span>
+              </div>
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="accordion-panel">
+              <div id="diff-viewer" style="display: none;"></div>
+              <div id="files-changed-list" class="file-changes-tree"></div>
+            </div>
+          </div>
+
+          <!-- Accordion 3: Artifacts -->
+          <div class="inspector-accordion open" id="acc-artifacts" data-tab="artifacts">
+            <div class="accordion-head">
+              <span class="accordion-label">Artifacts <span id="artifacts-badge" class="badge-count">0</span></span>
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="accordion-panel">
+              <div id="artifacts-viewer" class="artifacts-viewer-container">
+                <div id="artifacts-list" class="artifacts-file-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 4: Uploads -->
+          <div class="inspector-accordion open" id="acc-uploads">
+            <div class="accordion-head">
+              <span class="accordion-label">Uploads <span class="badge-count">3</span></span>
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="accordion-panel">
+              <div class="upload-file-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Media (Yesterday 11:52 PM)</span>
+              </div>
+              <div class="upload-file-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Media (Yesterday 11:44 PM)</span>
+              </div>
+              <div class="upload-file-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Media (Yesterday 11:10 PM)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 5: Background tasks -->
+          <div class="inspector-accordion" id="acc-tasks" data-tab="tdd">
+            <div class="accordion-head">
+              <span class="accordion-label">Background tasks <span class="badge-count">0</span></span>
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div class="accordion-panel hidden">
+              <div id="tdd-viewer" class="tdd-log-viewer"></div>
+              <p class="empty-note">No hay tareas asíncronas en ejecución.</p>
+            </div>
+          </div>
+
+          <!-- Accordion 6: Terminals -->
+          <div class="inspector-accordion" id="acc-terminals">
+            <div class="accordion-head">
+              <span class="accordion-label">Terminals <span class="badge-count">0</span></span>
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div class="accordion-panel hidden">
+              <p class="empty-note">Sin terminales activas.</p>
+            </div>
+          </div>
+
+          <!-- Accordion 7: Skills Used -->
+          <div class="inspector-accordion open" id="acc-skills" data-tab="okf">
+            <div class="accordion-head">
+              <span class="accordion-label">Skills Used <span id="skills-badge" class="badge-count">5</span></span>
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="accordion-panel">
+              <div id="skills-used-list" class="skills-used-container"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
 
     <!-- =================================================================== -->
-    <!-- 3. Right Auxiliary Pane (Tabs: Artifacts, Diff, TDD, OKF)          -->
+    <!-- Settings & Inspection Modals                                        -->
     <!-- =================================================================== -->
-    <aside id="auxiliary-pane">
-      <nav class="tab-nav">
-        <button class="tab-btn active" data-tab="artifacts">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
-          </svg>
-          <span>Artifacts</span>
-        </button>
-        <button class="tab-btn" data-tab="diff">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="18" r="3"/>
-            <circle cx="6" cy="6" r="3"/>
-            <path d="M13 6h3a2 2 0 0 1 2 2v7"/>
-            <line x1="6" y1="9" x2="6" y2="21"/>
-          </svg>
-          <span>Diff</span>
-        </button>
-        <button class="tab-btn" data-tab="tdd">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="4 17 10 11 4 5"/>
-            <line x1="12" y1="19" x2="20" y2="19"/>
-          </svg>
-          <span>TDD</span>
-        </button>
-        <button class="tab-btn" data-tab="okf">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-          <span>OKF</span>
-        </button>
-      </nav>
-
-      <!-- Artifacts Tab -->
-      <div id="tab-content-artifacts" class="tab-content active">
-        <div class="aux-header-label">
-          <span>Vista Previa de Especificación / PR</span>
+    <div id="modal-backdrop" class="modal-backdrop hidden">
+      <div id="settings-modal" class="antigravity-dialog hidden">
+        <div class="dialog-header">
+          <div class="dialog-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Configuración &bull; k-method app</span>
+          </div>
+          <button type="button" class="btn-close-modal" id="btn-close-settings">✕</button>
         </div>
-        <div id="artifacts-viewer" class="markdown-body">
-          <p style="color: var(--text-tertiary); font-style: italic;">(Ningún artefacto generado aún. Ejecuta una tarea para iniciar).</p>
+        <div class="dialog-body">
+          <div class="dialog-section">
+            <h4>Proveedor LLM Activo</h4>
+            <div class="provider-radio-group">
+              <label class="provider-card">
+                <input type="radio" name="modal-provider" value="antigravity" checked>
+                <div class="provider-card-content">
+                  <span class="prov-title">Google Antigravity SDK</span>
+                  <span class="prov-desc">Modelos Gemini 2.5 Pro / Flash con contexto de 1M+ tokens.</span>
+                </div>
+              </label>
+              <label class="provider-card">
+                <input type="radio" name="modal-provider" value="copilot">
+                <div class="provider-card-content">
+                  <span class="prov-title">GitHub Copilot SDK</span>
+                  <span class="prov-desc">Modelos GPT-4o, Claude 3.5 Sonnet y o1 vía CLI nativo.</span>
+                </div>
+              </label>
+              <label class="provider-card">
+                <input type="radio" name="modal-provider" value="mock">
+                <div class="provider-card-content">
+                  <span class="prov-title">Mock Provider</span>
+                  <span class="prov-desc">Modo offline de pruebas automatizadas y verificación.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="dialog-section">
+            <h4>Aprobación Automática (Auto-Approve)</h4>
+            <label class="toggle-row">
+              <input type="checkbox" id="modal-auto-approve">
+              <span>Omitir pausa de aprobación humana en fase SPEC (para pipelines desatendidos)</span>
+            </label>
+          </div>
+
+          <div class="dialog-section">
+            <h4>Estado del Workspace</h4>
+            <div class="workspace-meta-box">
+              <div><strong>Workspace:</strong> <span id="meta-workspace">k-method</span></div>
+              <div><strong>Rama Git:</strong> <span id="meta-branch">main</span></div>
+              <div><strong>Stash Shield:</strong> <span id="meta-stash">Limpio (Clean)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button type="button" class="btn-primary-blue" id="btn-save-settings">Guardar y Cerrar</button>
         </div>
       </div>
 
-      <!-- Diff Tab -->
-      <div id="tab-content-diff" class="tab-content">
-        <div class="aux-header-label">
-          <span>Git Working Tree Diff</span>
-          <button id="btn-refresh-diff" style="background: transparent; border: none; color: var(--gemini-cyan); cursor: pointer; font-size: 0.75rem;">↻ Actualizar</button>
+      <!-- Preview Modal (for Artifacts & Diffs) -->
+      <div id="preview-modal" class="antigravity-dialog large hidden">
+        <div class="dialog-header">
+          <div class="dialog-title" id="preview-modal-title">Vista Previa</div>
+          <button type="button" class="btn-close-modal" id="btn-close-preview">✕</button>
         </div>
-        <div id="diff-viewer" class="diff-container">(Sin modificaciones pendientes)</div>
+        <div class="dialog-body preview-body" id="preview-modal-content"></div>
       </div>
-
-      <!-- TDD Tab -->
-      <div id="tab-content-tdd" class="tab-content">
-        <div class="aux-header-label">
-          <span>Salida del Verifier (TDD Red &rarr; Green)</span>
-        </div>
-        <div class="terminal-window">
-          <div class="terminal-header">
-            <span class="term-dot red"></span>
-            <span class="term-dot yellow"></span>
-            <span class="term-dot green"></span>
-            <span class="term-title">k-verifier-terminal</span>
-          </div>
-          <div id="tdd-viewer" class="terminal-body">[k-verifier] En espera de ejecución TDD...</div>
-        </div>
-      </div>
-
-      <!-- OKF Tab -->
-      <div id="tab-content-okf" class="tab-content">
-        <div class="aux-header-label">
-          <span>Grafo de Conocimiento (OKF) &amp; ADRs</span>
-        </div>
-        <div id="okf-viewer" class="okf-cards-list">
-          <div class="okf-card">
-            <span class="okf-card-id">ADR-001</span>
-            <span class="okf-card-title">Karpathy 3-Layer Architecture (Spec, Verifier, Environment)</span>
-          </div>
-          <div class="okf-card">
-            <span class="okf-card-id">ADR-002</span>
-            <span class="okf-card-title">Multi-Platform CI &amp; Pull Request Strategy</span>
-          </div>
-          <div class="okf-card">
-            <span class="okf-card-id">ADR-003</span>
-            <span class="okf-card-title">Dual SDK Execution Harness (Google Antigravity &amp; Copilot)</span>
-          </div>
-          <div class="okf-card">
-            <span class="okf-card-id">ADR-004</span>
-            <span class="okf-card-title">Antigravity GUI and Embedded Skills Pattern</span>
-          </div>
-        </div>
-      </div>
-    </aside>
+    </div>
   </div>
 
   <script src="/static/app.js"></script>

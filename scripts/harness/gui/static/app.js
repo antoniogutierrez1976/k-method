@@ -1,6 +1,6 @@
 /**
- * k-method app Webview Client.
- * Connects to the ASGI backend, streams SDLC lifecycle events, and manages the 3-column UI.
+ * k-method app - Antigravity IDE Studio Client.
+ * Connects to ASGI backend, streams SDLC lifecycle events, and manages the Antigravity UI.
  */
 
 // XSS Sanitization utility (AC-Sec-1)
@@ -16,158 +16,167 @@ function escapeHtml(unsafeText) {
 
 const DEFAULT_PROVIDER_MODELS = {
   antigravity: [
-    { id: "gemini-2.5-flash", name: "gemini-2.5-flash (Recomendado)", default: true },
-    { id: "gemini-2.5-pro", name: "gemini-2.5-pro (Razonamiento Complejo)" },
-    { id: "gemini-3.8-flash", name: "gemini-3.8-flash (SDK Default)" },
-    { id: "gemini-1.5-pro", name: "gemini-1.5-pro (Contexto Extendido)" },
+    { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", default: true },
+    { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro" },
+    { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
+    { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
+    { id: "gemini-3.8-flash", name: "Gemini 3.8 Flash High" },
   ],
   copilot: [
-    { id: "gpt-6-luna", name: "gpt-6-luna (Copilot Default)", default: true },
-    { id: "gpt-6.1-sol", name: "gpt-6.1-sol (Razonamiento Copilot)" },
-    { id: "claude-3.5-sonnet", name: "claude-3.5-sonnet (Copilot)" },
-    { id: "gpt-4o", name: "gpt-4o (Multimodal)" },
+    { id: "auto", name: "Copilot Auto", default: true },
+    { id: "gpt-4o", name: "GPT-4o (GitHub Copilot CLI)" },
+    { id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
+    { id: "claude-3.7-sonnet", name: "Claude 3.7 Sonnet" },
+    { id: "o3-mini", name: "o3-mini (Reasoning)" },
+    { id: "gpt-6-luna", name: "GPT-6 Luna" },
   ],
   mock: [
-    { id: "mock-model", name: "mock-model (Offline Testing)", default: true },
+    { id: "mock-model", name: "Mock Model (Offline)", default: true },
   ],
 };
 
 let availableProviderModels = DEFAULT_PROVIDER_MODELS;
+let currentProvider = "antigravity";
+let currentModel = "gemini-2.5-flash";
+let autoApprove = false;
+let ws = null;
+let currentAgentBubble = null;
+let currentRawContent = "";
+let currentStepCard = null;
+
+// ===================================================================
+// Model Selection & SDK Discovery (AC-6, AC-7)
+// ===================================================================
 
 function updateModelOptions(selectedProvider, preselectedModel = null) {
+  currentProvider = selectedProvider;
   const modelSelect = document.getElementById("model-select");
-  if (!modelSelect) return;
-
   const models = (availableProviderModels && availableProviderModels[selectedProvider]) ||
-                 DEFAULT_PROVIDER_MODELS[selectedProvider] ||
-                 [];
+                 DEFAULT_PROVIDER_MODELS[selectedProvider] || [];
 
-  modelSelect.innerHTML = "";
-  models.forEach((m) => {
-    const opt = document.createElement("option");
-    opt.value = m.id;
-    opt.textContent = m.name || m.id;
-    if (preselectedModel ? m.id === preselectedModel : m.default) {
-      opt.selected = true;
-    }
-    modelSelect.appendChild(opt);
-  });
-
-  const customOpt = document.createElement("option");
-  customOpt.value = "__custom__";
-  customOpt.textContent = "✍️ Escribir modelo personalizado...";
-  modelSelect.appendChild(customOpt);
-
-  const customInput = document.getElementById("custom-model-input");
-  if (customInput) {
-    if (preselectedModel && !models.some(m => m.id === preselectedModel)) {
-      customOpt.selected = true;
-      customInput.value = preselectedModel;
-      customInput.style.display = "block";
-    } else {
-      customInput.style.display = "none";
-    }
-  }
-}
-
-let ws = null;
-let currentAgentMessageEl = null;
-let currentRawContent = "";
-
-function initTabs() {
-  const tabBtns = document.querySelectorAll(".tab-btn");
-  tabBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      tabBtns.forEach((b) => b.classList.remove("active"));
-      document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
-
-      btn.classList.add("active");
-      const targetId = `tab-content-${btn.getAttribute("data-tab")}`;
-      const targetContent = document.getElementById(targetId);
-      if (targetContent) {
-        targetContent.classList.add("active");
+  if (modelSelect) {
+    modelSelect.innerHTML = "";
+    models.forEach((m) => {
+      const opt = document.createElement("option");
+      opt.value = m.id;
+      opt.textContent = m.name || m.id;
+      if (preselectedModel ? m.id === preselectedModel : m.default) {
+        opt.selected = true;
+        currentModel = m.id;
       }
+      modelSelect.appendChild(opt);
     });
+
+    const customOpt = document.createElement("option");
+    customOpt.value = "__custom__";
+    customOpt.textContent = "✍️ Personalizado...";
+    modelSelect.appendChild(customOpt);
+  }
+
+  // Update Floating Pill Label
+  const pillLabel = document.getElementById("model-pill-label");
+  if (pillLabel) {
+    const activeM = models.find(m => m.id === currentModel);
+    pillLabel.textContent = activeM ? (activeM.name || activeM.id) : (preselectedModel || "Gemini 2.5 Flash");
+  }
+
+  renderPickerModelList(selectedProvider);
+}
+
+function renderPickerModelList(prov) {
+  const container = document.getElementById("picker-models-list");
+  if (!container) return;
+
+  const models = (availableProviderModels && availableProviderModels[prov]) ||
+                 DEFAULT_PROVIDER_MODELS[prov] || [];
+
+  container.innerHTML = "";
+  models.forEach((m) => {
+    const row = document.createElement("div");
+    row.className = `model-option-row ${m.id === currentModel ? "selected" : ""}`;
+    row.innerHTML = `
+      <span>${escapeHtml(m.name || m.id)}</span>
+      ${m.default ? '<span style="font-size:0.7rem; color:var(--text-muted);">(Default)</span>' : ''}
+    `;
+    row.addEventListener("click", () => {
+      currentModel = m.id;
+      currentProvider = prov;
+      const provSelect = document.getElementById("provider-select");
+      if (provSelect) provSelect.value = prov;
+      updateModelOptions(prov, m.id);
+      document.getElementById("model-picker-card").classList.add("hidden");
+    });
+    container.appendChild(row);
   });
 }
 
-function renderDiff(diffText) {
-  const viewer = document.getElementById("diff-viewer");
-  if (!viewer) return;
-  if (!diffText || !diffText.trim()) {
-    viewer.textContent = "(Sin modificaciones en el working tree)";
-    return;
-  }
-  const lines = diffText.split("\n");
-  viewer.innerHTML = "";
-  lines.forEach((line) => {
-    const div = document.createElement("div");
-    if (line.startsWith("+") && !line.startsWith("+++")) {
-      div.className = "diff-line-add";
-    } else if (line.startsWith("-") && !line.startsWith("---")) {
-      div.className = "diff-line-del";
-    } else if (line.startsWith("@@")) {
-      div.className = "diff-line-hunk";
-    }
-    div.textContent = line;
-    viewer.appendChild(div);
+// ===================================================================
+// Step Cards & Antigravity Activity Rendering
+// ===================================================================
+
+function createStepCard(title, isRunning = true) {
+  const card = document.createElement("div");
+  card.className = "antigravity-step-card open";
+  card.innerHTML = `
+    <div class="step-card-header">
+      <div class="step-header-left">
+        <span class="step-status-icon ${isRunning ? "running" : "success"}">
+          ${isRunning ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'}
+        </span>
+        <span class="step-card-title">${escapeHtml(title)}</span>
+      </div>
+      <svg class="step-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="step-card-content">
+      <div class="step-sublist"></div>
+    </div>
+  `;
+
+  card.querySelector(".step-card-header").addEventListener("click", () => {
+    card.classList.toggle("open");
   });
+
+  const chatContainer = document.getElementById("chat-messages");
+  if (chatContainer) {
+    chatContainer.appendChild(card);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+  return card;
 }
 
-async function loadStatusAndSkills() {
-  try {
-    const resStatus = await fetch("/api/status");
-    if (resStatus.ok) {
-      const data = await resStatus.json();
-      document.getElementById("workspace-label").textContent = escapeHtml(data.workspace);
-      document.getElementById("branch-label").textContent = escapeHtml(data.branch);
-      const shield = document.getElementById("stash-shield-status");
-      shield.textContent = data.is_clean ? "🛡️ Clean" : "⚠️ Dirty";
-      shield.className = `status-badge ${data.is_clean ? "clean" : "dirty"}`;
+function addSubStepToCard(card, text) {
+  if (!card) return;
+  const list = card.querySelector(".step-sublist");
+  if (!list) return;
 
-      if (data.models) {
-        availableProviderModels = data.models;
-      }
-      if (data.provider_default) {
-        const providerSelect = document.getElementById("provider-select");
-        if (providerSelect && Array.from(providerSelect.options).some(o => o.value === data.provider_default)) {
-          providerSelect.value = data.provider_default;
-        }
-      }
-    }
+  const item = document.createElement("div");
+  item.className = "step-subitem";
+  item.innerHTML = `
+    <span class="step-subitem-icon">&bull;</span>
+    <span>${escapeHtml(text)}</span>
+  `;
+  list.appendChild(item);
 
-    const providerSelect = document.getElementById("provider-select");
-    if (providerSelect) {
-      updateModelOptions(providerSelect.value);
-    }
+  const chatContainer = document.getElementById("chat-messages");
+  if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
-    const resSkills = await fetch("/api/skills");
-    if (resSkills.ok) {
-      const data = await resSkills.json();
-      const listEl = document.getElementById("skills-list");
-      listEl.innerHTML = "";
-      data.skills.forEach((skill) => {
-        const item = document.createElement("div");
-        item.className = "skill-badge";
-        item.innerHTML = `
-          <div class="skill-badge-header">
-            <span class="badge-name">${escapeHtml(skill.name)}</span>
-            <span class="badge-layer">${escapeHtml(skill.layer)}</span>
-          </div>
-        `;
-        listEl.appendChild(item);
-      });
-    }
-
-    const resDiff = await fetch("/api/diff");
-    if (resDiff.ok) {
-      const diffData = await resDiff.json();
-      renderDiff(diffData.diff || "");
-    }
-  } catch (err) {
-    console.error("Failed to load workspace status:", err);
+function finishStepCard(card, finalTitle) {
+  if (!card) return;
+  const icon = card.querySelector(".step-status-icon");
+  if (icon) {
+    icon.className = "step-status-icon success";
+    icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+  }
+  if (finalTitle) {
+    const t = card.querySelector(".step-card-title");
+    if (t) t.textContent = finalTitle;
   }
 }
+
+// ===================================================================
+// WebSocket & SDLC Streaming Protocol (AC-3, AC-4, AC-5)
+// ===================================================================
 
 function connectWebSocket() {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -175,7 +184,7 @@ function connectWebSocket() {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    console.log("WebSocket connected to SDLC harness");
+    console.log("Connected to k-method SDLC engine via WebSocket.");
   };
 
   ws.onmessage = (event) => {
@@ -183,7 +192,7 @@ function connectWebSocket() {
     try {
       msg = JSON.parse(event.data);
     } catch (e) {
-      console.error("Non-JSON WebSocket message received:", event.data);
+      console.error("Non-JSON message:", event.data);
       return;
     }
 
@@ -213,7 +222,6 @@ function connectWebSocket() {
   };
 
   ws.onclose = () => {
-    console.log("WebSocket disconnected. Reconnecting in 3s...");
     setTimeout(connectWebSocket, 3000);
   };
 }
@@ -223,121 +231,498 @@ function handleStageChanged(stage) {
   if (pill) {
     pill.innerHTML = `<span class="status-dot"></span><span>${escapeHtml(stage)}</span>`;
   }
-  appendChatEvent(`Fase activa: ${stage}`, "agent");
-  currentAgentMessageEl = null;
+
+  // Update Breadcrumb conversation title
+  const breadcrumb = document.getElementById("breadcrumb-conversation");
+  if (breadcrumb && stage !== "INIT") {
+    breadcrumb.textContent = `SDLC Cycle &bull; ${stage}`;
+  }
+
+  // Create or close step cards based on stage
+  if (stage === "SPEC") {
+    currentStepCard = createStepCard("Fase 1: Especificación Formal Canónica (k-spec)", true);
+    addSubStepToCard(currentStepCard, "Analizando requerimientos y matriz de 6 ACs");
+    addSubStepToCard(currentStepCard, "Inyectando directivas canónicas de Karpathy v17");
+  } else if (stage === "VERIFIER_RED") {
+    if (currentStepCard) finishStepCard(currentStepCard, "Fase 1: Especificación Completada");
+    currentStepCard = createStepCard("Fase 2: Verifier TDD - Ciclo Rojo (Fallo Inicial)", true);
+    addSubStepToCard(currentStepCard, "Ejecutando suite para verificar ausencia de código");
+  } else if (stage === "VERIFIER_GREEN") {
+    if (currentStepCard) finishStepCard(currentStepCard, "Fase 2: Red Phase Verificada");
+    currentStepCard = createStepCard("Fase 3: Verifier TDD - Ciclo Verde (Implementación)", true);
+    addSubStepToCard(currentStepCard, "Compilando lógica mínima de paso y cobertura");
+  } else if (stage === "COMPLETED") {
+    if (currentStepCard) finishStepCard(currentStepCard, "Ciclo SDLC Finalizado con Éxito");
+    currentStepCard = null;
+    loadStatusAndFiles();
+  }
+
+  currentAgentBubble = null;
   currentRawContent = "";
 }
 
 function handleToken(tokenContent) {
-  if (!currentAgentMessageEl) {
-    const row = document.createElement("div");
-    row.className = "message-row agent";
-    row.innerHTML = `
-      <div class="message-avatar agent-avatar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
-      </div>
-      <div class="message-bubble agent"></div>
-    `;
-    document.getElementById("chat-messages").appendChild(row);
-    currentAgentMessageEl = row.querySelector(".message-bubble");
+  // If we have an active step card and token starts with step progress
+  if (tokenContent.includes("🧠 Evaluando")) {
+    if (!currentStepCard) currentStepCard = createStepCard("Triage & Clasificación de Intención", true);
+    addSubStepToCard(currentStepCard, "Evaluando intención: QUERY vs FEATURE vs BUGFIX");
+    return;
+  }
+  if (tokenContent.includes("📌 Especificación guardada")) {
+    if (currentStepCard) addSubStepToCard(currentStepCard, tokenContent.trim());
+    return;
+  }
+
+  // Conversational response bubble
+  if (!currentAgentBubble) {
+    const bubble = document.createElement("div");
+    bubble.className = "agent-response-bubble";
+    document.getElementById("chat-messages").appendChild(bubble);
+    currentAgentBubble = bubble;
     currentRawContent = "";
   }
+
   currentRawContent += tokenContent;
   if (window.marked && typeof marked.parse === "function") {
-    currentAgentMessageEl.innerHTML = marked.parse(currentRawContent);
+    currentAgentBubble.innerHTML = marked.parse(currentRawContent);
   } else {
-    currentAgentMessageEl.innerHTML = escapeHtml(currentRawContent);
+    currentAgentBubble.innerHTML = escapeHtml(currentRawContent);
   }
+
   const container = document.getElementById("chat-messages");
   container.scrollTop = container.scrollHeight;
 }
 
 function handleApprovalRequired(specContent, specFile) {
+  if (currentStepCard) {
+    finishStepCard(currentStepCard, "Fase 1: Especificación Lista (Aprobación Requerida)");
+    if (specFile) addSubStepToCard(currentStepCard, `Archivo guardado: ${specFile}`);
+  }
+
   document.getElementById("approval-bar").classList.add("active");
-  const artifactsViewer = document.getElementById("artifacts-viewer");
-  let headerHtml = "";
-  if (specFile) {
-    headerHtml = `<div class="spec-file-banner" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.35); padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 0.85rem; color: #93c5fd; display: flex; align-items: center; gap: 8px;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      <span><strong>Archivo guardado:</strong> <code>${escapeHtml(specFile)}</code></span>
-    </div>`;
-  }
-  if (window.marked && typeof marked.parse === "function") {
-    artifactsViewer.innerHTML = headerHtml + marked.parse(specContent);
-  } else {
-    artifactsViewer.innerHTML = headerHtml + `<pre>${escapeHtml(specContent)}</pre>`;
-  }
-  
-  // Switch auxiliary tab to artifacts
-  const artifactsBtn = document.querySelector('[data-tab="artifacts"]');
-  if (artifactsBtn) artifactsBtn.click();
+
+  // Show spec in preview or artifacts list
+  loadArtifacts();
+
+  // Scroll into view
+  const approvalBar = document.getElementById("approval-bar");
+  if (approvalBar) approvalBar.scrollIntoView({ behavior: "smooth" });
 }
 
 function handleTddOutput(returncode, output) {
+  if (currentStepCard) {
+    addSubStepToCard(currentStepCard, `Test Runner Exit Code: ${returncode}`);
+  }
   const tddViewer = document.getElementById("tdd-viewer");
-  tddViewer.textContent += `\n[Exit Code: ${returncode}]\n${output}\n`;
+  if (tddViewer) {
+    tddViewer.textContent += `\n[Exit Code: ${returncode}]\n${output}\n`;
+  }
 }
 
 function handleCompleted(prContent) {
-  const artifactsViewer = document.getElementById("artifacts-viewer");
-  if (window.marked && typeof marked.parse === "function") {
-    artifactsViewer.innerHTML = marked.parse(prContent);
-  } else {
-    artifactsViewer.textContent = prContent;
-  }
-  appendChatEvent("🚀 Ejecución completada. Todos los quality gates superados.", "agent");
+  appendUserOrAgentText(`🎉 **Ejecución Completada**. Todos los quality gates superados.\n\n${prContent}`, "agent");
+  loadStatusAndFiles();
 }
 
 function handleError(errorMessage) {
-  appendChatEvent(`❌ Error: ${errorMessage}`, "agent");
+  if (currentStepCard) {
+    finishStepCard(currentStepCard, "Error en Ejecución");
+    addSubStepToCard(currentStepCard, `❌ ${errorMessage}`);
+  }
+  appendUserOrAgentText(`❌ **Error**: ${errorMessage}`, "agent");
 }
 
-function appendChatEvent(text, sender) {
-  const row = document.createElement("div");
-  row.className = `message-row ${sender}`;
-  
-  const avatar = document.createElement("div");
-  avatar.className = `message-avatar ${sender}-avatar`;
-  if (sender === "user") {
-    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-  } else {
-    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
-  }
-
-  const bubble = document.createElement("div");
-  bubble.className = `message-bubble ${sender}`;
-  if (sender === "agent" && window.marked && typeof marked.parse === "function") {
-    bubble.innerHTML = marked.parse(text);
-  } else {
-    bubble.innerHTML = escapeHtml(text);
-  }
-
-  row.appendChild(avatar);
-  row.appendChild(bubble);
-  document.getElementById("chat-messages").appendChild(row);
+function appendUserOrAgentText(text, sender) {
   const container = document.getElementById("chat-messages");
+  if (!container) return;
+
+  if (sender === "user") {
+    const userCard = document.createElement("div");
+    userCard.className = "user-message-card";
+    userCard.textContent = text;
+    container.appendChild(userCard);
+  } else {
+    const bubble = document.createElement("div");
+    bubble.className = "agent-response-bubble";
+    if (window.marked && typeof marked.parse === "function") {
+      bubble.innerHTML = marked.parse(text);
+    } else {
+      bubble.innerHTML = escapeHtml(text);
+    }
+    container.appendChild(bubble);
+  }
   container.scrollTop = container.scrollHeight;
 }
 
-function initActionButtons() {
-  document.getElementById("btn-approve").addEventListener("click", () => {
-    document.getElementById("approval-bar").classList.remove("active");
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ action: "approval_response", approved: true }));
+// ===================================================================
+// Workspace Context, Files Changed & Artifacts (Right Panel)
+// ===================================================================
+
+async function loadStatusAndFiles() {
+  try {
+    const resStatus = await fetch("/api/status");
+    if (resStatus.ok) {
+      const data = await resStatus.json();
+      const metaWorkspace = document.getElementById("meta-workspace");
+      const metaBranch = document.getElementById("meta-branch");
+      const metaStash = document.getElementById("meta-stash");
+      if (metaWorkspace) metaWorkspace.textContent = data.workspace || "k-method";
+      if (metaBranch) metaBranch.textContent = data.branch || "main";
+      if (metaStash) metaStash.textContent = data.is_clean ? "Limpio (Clean)" : "Modificado (Dirty)";
+
+      if (data.models) availableProviderModels = data.models;
     }
-    appendChatEvent("✅ Especificación aprobada por el operador humano.", "user");
+  } catch (err) {
+    console.warn("Status fetch failed:", err);
+  }
+
+  // Load Git Diff & Changed files
+  try {
+    const resDiff = await fetch("/api/diff");
+    if (resDiff.ok) {
+      const diffData = await resDiff.json();
+      renderChangedFiles(diffData.files || []);
+    }
+  } catch (err) {
+    console.warn("Diff fetch failed:", err);
+  }
+
+  // Load Artifacts (specs)
+  loadArtifacts();
+
+  // Load Skills catalog
+  loadSkillsCatalog();
+}
+
+function renderChangedFiles(files) {
+  const listEl = document.getElementById("files-changed-list");
+  const countBadge = document.getElementById("files-changed-badge");
+  if (countBadge) countBadge.textContent = files.length;
+  if (!listEl) return;
+
+  listEl.innerHTML = "";
+  if (files.length === 0) {
+    listEl.innerHTML = '<p class="empty-note">(Working tree limpio)</p>';
+    return;
+  }
+
+  files.forEach((f) => {
+    const row = document.createElement("div");
+    row.className = "file-row-item";
+    const statusClass = f.status.includes("?") ? "added" : (f.status.includes("D") ? "deleted" : "modified");
+    row.innerHTML = `
+      <span class="file-dot ${statusClass}"></span>
+      <div class="file-info">
+        <span class="file-name">${escapeHtml(f.name)}</span>
+        <span class="file-path">${escapeHtml(f.dir)}</span>
+      </div>
+    `;
+    row.addEventListener("click", async () => {
+      openPreviewModal(`Diff: ${f.name}`, `<pre style="font-family:var(--font-mono);font-size:0.8rem;">Cargando diff para ${f.path}...</pre>`);
+      try {
+        const res = await fetch("/api/diff");
+        if (res.ok) {
+          const d = await res.json();
+          openPreviewModal(`Diff: ${f.name}`, `<pre style="font-family:var(--font-mono);font-size:0.82rem;white-space:pre-wrap;">${escapeHtml(d.diff || "Sin diff disponible")}</pre>`);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+    listEl.appendChild(row);
+  });
+}
+
+async function loadArtifacts() {
+  try {
+    const res = await fetch("/api/artifacts");
+    if (!res.ok) return;
+    const data = await res.json();
+    const artifacts = data.artifacts || [];
+
+    const badge = document.getElementById("artifacts-badge");
+    if (badge) badge.textContent = artifacts.length;
+
+    const listEl = document.getElementById("artifacts-list");
+    if (!listEl) return;
+
+    listEl.innerHTML = "";
+    if (artifacts.length === 0) {
+      listEl.innerHTML = '<p class="empty-note">Sin artefactos generados aún.</p>';
+      return;
+    }
+
+    artifacts.forEach((art) => {
+      const item = document.createElement("div");
+      item.className = "file-row-item";
+      item.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div class="file-info">
+          <span class="file-name">${escapeHtml(art.name)}</span>
+          <span class="file-path">${escapeHtml(art.slug)}</span>
+        </div>
+      `;
+      item.addEventListener("click", async () => {
+        try {
+          const resp = await fetch(`/api/artifact?path=${encodeURIComponent(art.path)}`);
+          if (resp.ok) {
+            const body = await resp.json();
+            const rendered = window.marked && typeof marked.parse === "function" ? marked.parse(body.content) : `<pre>${escapeHtml(body.content)}</pre>`;
+            openPreviewModal(`Artefacto: ${art.name} (${art.slug})`, rendered);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+      listEl.appendChild(item);
+    });
+  } catch (err) {
+    console.warn("Artifacts fetch failed:", err);
+  }
+}
+
+async function loadSkillsCatalog() {
+  try {
+    const res = await fetch("/api/skills");
+    if (!res.ok) return;
+    const data = await res.json();
+    const skills = data.skills || [];
+
+    const badge = document.getElementById("skills-badge");
+    if (badge) badge.textContent = skills.length;
+
+    const listEl = document.getElementById("skills-used-list");
+    if (!listEl) return;
+
+    listEl.innerHTML = "";
+    skills.forEach((s) => {
+      const row = document.createElement("div");
+      row.className = "skill-row-item";
+      row.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <div class="file-info">
+          <span class="skill-name">${escapeHtml(s.name)}</span>
+          <span class="skill-path">${escapeHtml(s.layer || "Karpathy v17")}</span>
+        </div>
+      `;
+      row.addEventListener("click", () => {
+        openPreviewModal(`Skill: ${s.name}`, `<h3>${escapeHtml(s.name)} (${escapeHtml(s.version || "v17")})</h3><p><strong>Capa:</strong> ${escapeHtml(s.layer)}</p><p>${escapeHtml(s.description)}</p>`);
+      });
+      listEl.appendChild(row);
+    });
+  } catch (err) {
+    console.warn("Skills fetch failed:", err);
+  }
+}
+
+// ===================================================================
+// Preview & Settings Modals
+// ===================================================================
+
+function openPreviewModal(title, htmlContent) {
+  const backdrop = document.getElementById("modal-backdrop");
+  const modal = document.getElementById("preview-modal");
+  const titleEl = document.getElementById("preview-modal-title");
+  const bodyEl = document.getElementById("preview-modal-content");
+
+  if (titleEl) titleEl.innerHTML = title;
+  if (bodyEl) bodyEl.innerHTML = htmlContent;
+
+  backdrop.classList.remove("hidden");
+  modal.classList.remove("hidden");
+  document.getElementById("settings-modal").classList.add("hidden");
+}
+
+function closeModals() {
+  document.getElementById("modal-backdrop").classList.add("hidden");
+  document.getElementById("settings-modal").classList.add("hidden");
+  document.getElementById("preview-modal").classList.add("hidden");
+}
+
+// ===================================================================
+// Event Listeners & Initialization
+// ===================================================================
+
+function initUI() {
+  // Theme Toggle
+  const themeBtn = document.getElementById("btn-theme-toggle");
+  if (themeBtn) {
+    themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      const next = current === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+    });
+  }
+
+  // Model Selector Dropdown Pill
+  const pillBtn = document.getElementById("btn-model-pill");
+  const pickerCard = document.getElementById("model-picker-card");
+  if (pillBtn && pickerCard) {
+    pillBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      pickerCard.classList.toggle("hidden");
+    });
+    document.addEventListener("click", (e) => {
+      if (!pickerCard.contains(e.target) && e.target !== pillBtn) {
+        pickerCard.classList.add("hidden");
+      }
+    });
+  }
+
+  // Mini Tabs in Model Picker
+  document.querySelectorAll(".tab-btn-mini").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn-mini").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const prov = btn.getAttribute("data-prov");
+      renderPickerModelList(prov);
+    });
   });
 
-  document.getElementById("btn-revise").addEventListener("click", () => {
-    document.getElementById("approval-bar").classList.remove("active");
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ action: "approval_response", approved: false, feedback: "Revisión solicitada." }));
-    }
-    appendChatEvent("🛑 Especificación rechazada para revisión.", "user");
+  // Custom model text input in picker
+  const pickerCustomInput = document.getElementById("picker-custom-input");
+  if (pickerCustomInput) {
+    pickerCustomInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && pickerCustomInput.value.trim()) {
+        const customVal = pickerCustomInput.value.trim();
+        currentModel = customVal;
+        updateModelOptions(currentProvider, customVal);
+        pickerCard.classList.add("hidden");
+      }
+    });
+  }
+
+  // Form Submit / Send Task
+  const form = document.getElementById("task-form");
+  const input = document.getElementById("task-input");
+  if (form && input) {
+    // Auto-expand textarea
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 160) + "px";
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event("submit"));
+      }
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const taskText = input.value.trim();
+      if (!taskText) return;
+
+      appendUserOrAgentText(taskText, "user");
+      input.value = "";
+      input.style.height = "auto";
+
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          action: "start",
+          task: taskText,
+          provider: currentProvider,
+          model: currentModel,
+          auto_approve: autoApprove,
+        }));
+      }
+    });
+  }
+
+  // New Conversation Button
+  const btnNewConv = document.getElementById("btn-new-conversation");
+  if (btnNewConv) {
+    btnNewConv.addEventListener("click", () => {
+      const container = document.getElementById("chat-messages");
+      if (container) {
+        container.innerHTML = "";
+        appendUserOrAgentText("Hola. Soy el motor de **k-method** en Antigravity. Introduce una consulta o requerimiento para comenzar.", "agent");
+      }
+      document.getElementById("approval-bar").classList.remove("active");
+      currentStepCard = null;
+    });
+  }
+
+  // Restart to Update Button
+  const btnRestart = document.getElementById("btn-restart-update");
+  if (btnRestart) {
+    btnRestart.addEventListener("click", () => {
+      window.location.reload();
+    });
+  }
+
+  // Approval Bar Buttons
+  const btnApprove = document.getElementById("btn-approve");
+  if (btnApprove) {
+    btnApprove.addEventListener("click", () => {
+      document.getElementById("approval-bar").classList.remove("active");
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: "approval_response", approved: true }));
+      }
+      appendUserOrAgentText("✅ Especificación aprobada por el operador humano.", "user");
+    });
+  }
+
+  const btnRevise = document.getElementById("btn-revise");
+  if (btnRevise) {
+    btnRevise.addEventListener("click", () => {
+      document.getElementById("approval-bar").classList.remove("active");
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: "approval_response", approved: false, feedback: "Revisión solicitada." }));
+      }
+      appendUserOrAgentText("🛑 Especificación rechazada para revisión.", "user");
+    });
+  }
+
+  // Accordion Toggles
+  document.querySelectorAll(".accordion-head").forEach((head) => {
+    head.addEventListener("click", () => {
+      const accordion = head.closest(".inspector-accordion");
+      if (accordion) accordion.classList.toggle("open");
+    });
   });
 
+  // Settings Dialog Open / Close
+  const btnSettings = document.getElementById("btn-settings-dialog");
+  const modalBackdrop = document.getElementById("modal-backdrop");
+  const settingsModal = document.getElementById("settings-modal");
+  const btnCloseSettings = document.getElementById("btn-close-settings");
+  const btnSaveSettings = document.getElementById("btn-save-settings");
+  const btnClosePreview = document.getElementById("btn-close-preview");
+
+  if (btnSettings && modalBackdrop && settingsModal) {
+    btnSettings.addEventListener("click", () => {
+      modalBackdrop.classList.remove("hidden");
+      settingsModal.classList.remove("hidden");
+      document.getElementById("preview-modal").classList.add("hidden");
+    });
+  }
+
+  if (btnCloseSettings) btnCloseSettings.addEventListener("click", closeModals);
+  if (btnClosePreview) btnClosePreview.addEventListener("click", closeModals);
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) closeModals();
+    });
+  }
+
+  if (btnSaveSettings) {
+    btnSaveSettings.addEventListener("click", () => {
+      const selectedRadio = document.querySelector('input[name="modal-provider"]:checked');
+      if (selectedRadio) {
+        currentProvider = selectedRadio.value;
+        const pSelect = document.getElementById("provider-select");
+        if (pSelect) pSelect.value = currentProvider;
+        updateModelOptions(currentProvider);
+      }
+      const chkAuto = document.getElementById("modal-auto-approve");
+      if (chkAuto) autoApprove = chkAuto.checked;
+      closeModals();
+    });
+  }
+
+  // Provider Select Change (binding for test suite contract AC-6)
   const providerSelect = document.getElementById("provider-select");
   if (providerSelect) {
     providerSelect.addEventListener("change", (e) => {
@@ -345,83 +730,33 @@ function initActionButtons() {
     });
   }
 
-  const modelSelect = document.getElementById("model-select");
-  const customInput = document.getElementById("custom-model-input");
-  if (modelSelect && customInput) {
-    modelSelect.addEventListener("change", (e) => {
-      if (e.target.value === "__custom__") {
-        customInput.style.display = "block";
-        customInput.focus();
-      } else {
-        customInput.style.display = "none";
-      }
-    });
-  }
-
+  // Refresh Models Button (binding for test suite contract AC-7)
   const refreshModelsBtn = document.getElementById("btn-refresh-models");
   if (refreshModelsBtn) {
     refreshModelsBtn.addEventListener("click", async () => {
-      const origText = refreshModelsBtn.innerHTML;
-      refreshModelsBtn.innerHTML = "<span>⏳ Consultando SDK...</span>";
       try {
         const res = await fetch("/api/models");
         if (res.ok) {
           const data = await res.json();
           if (data.models) {
             availableProviderModels = data.models;
-            const currentProvider = document.getElementById("provider-select").value;
-            const currentModel = document.getElementById("model-select").value;
             updateModelOptions(currentProvider, currentModel);
           }
         }
       } catch (err) {
-        console.error("Failed to refresh models from SDK:", err);
-      } finally {
-        refreshModelsBtn.innerHTML = origText;
+        console.error("Refresh failed:", err);
       }
     });
   }
 
-  const refreshDiffBtn = document.getElementById("btn-refresh-diff");
-  if (refreshDiffBtn) {
-    refreshDiffBtn.addEventListener("click", async () => {
-      try {
-        const resDiff = await fetch("/api/diff");
-        if (resDiff.ok) {
-          const diffData = await resDiff.json();
-          renderDiff(diffData.diff || "");
-        }
-      } catch (e) {
-        console.error("Error refreshing diff:", e);
-      }
-    });
-  }
-
-  document.getElementById("task-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const input = document.getElementById("task-input");
-    const task = input.value.trim();
-    if (!task) return;
-
-    const provider = document.getElementById("provider-select").value;
-    let model = document.getElementById("model-select").value;
-    if (model === "__custom__") {
-      const customVal = document.getElementById("custom-model-input")?.value?.trim();
-      model = customVal || (provider === "antigravity" ? "gemini-2.5-flash" : "gpt-6-luna");
-    }
-
-    appendChatEvent(task, "user");
-    input.value = "";
-
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ action: "start", task, provider, model }));
-    }
-  });
+  // Initial welcome greeting
+  appendUserOrAgentText("Hola. Soy el motor de **k-method** en Antigravity. Introduce una funcionalidad, corrección o consulta para comenzar.", "agent");
 }
 
+// Bootstrap
 document.addEventListener("DOMContentLoaded", () => {
-  initTabs();
-  loadStatusAndSkills();
-  initActionButtons();
+  initUI();
+  updateModelOptions(currentProvider);
+  loadStatusAndFiles();
   connectWebSocket();
 });

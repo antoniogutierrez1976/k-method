@@ -75,6 +75,34 @@ def get_git_diff() -> str:
         return ""
 
 
+def get_changed_files() -> list:
+    try:
+        res = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        files = []
+        for line in (res.stdout or "").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            status_code = line[:2].strip()
+            file_path = line[2:].strip().replace('"', '')
+            files.append({
+                "path": file_path,
+                "name": os.path.basename(file_path),
+                "dir": os.path.dirname(file_path) or ".",
+                "status": status_code,
+            })
+        return files
+    except Exception:
+        return []
+
+
 def fetch_sdk_models_for_provider(provider_type: str) -> list:
     """
     Dynamically queries models directly from the active SDKs.
@@ -189,7 +217,40 @@ def create_app() -> FastAPI:
 
     @app.get("/api/diff")
     async def get_diff():
-        return {"diff": redact_secrets(get_git_diff())}
+        return {
+            "diff": redact_secrets(get_git_diff()),
+            "files": get_changed_files(),
+        }
+
+    @app.get("/api/artifacts")
+    async def get_artifacts():
+        artifacts = []
+        specs_dir = os.path.join(REPO_ROOT, "specs")
+        if os.path.exists(specs_dir):
+            for root, dirs, files in os.walk(specs_dir):
+                for f in files:
+                    if f.endswith(".md"):
+                        full_p = os.path.join(root, f)
+                        rel_path = os.path.relpath(full_p, REPO_ROOT).replace("\\", "/")
+                        artifacts.append({
+                            "name": f,
+                            "path": rel_path,
+                            "slug": os.path.basename(root),
+                            "modified": os.path.getmtime(full_p),
+                        })
+        artifacts.sort(key=lambda x: x["modified"], reverse=True)
+        return {"artifacts": artifacts}
+
+    @app.get("/api/artifact")
+    async def get_artifact_content(path: str):
+        # Prevent directory traversal
+        norm = os.path.normpath(os.path.join(REPO_ROOT, path))
+        if not norm.startswith(REPO_ROOT):
+            return JSONResponse({"error": "Access denied"}, status_code=403)
+        if not os.path.exists(norm):
+            return JSONResponse({"error": "File not found"}, status_code=404)
+        with open(norm, "r", encoding="utf-8", errors="replace") as f:
+            return {"content": f.read(), "path": path}
 
     @app.get("/api/skills")
     async def get_skills():
