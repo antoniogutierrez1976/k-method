@@ -68,6 +68,7 @@ class TestGUIFrontendLayout(unittest.TestCase):
         self.assertIn('id="provider-select"', html, "Missing provider selector")
         self.assertIn('id="model-select"', html, "Missing model selector")
         self.assertIn('id="skills-list"', html, "Missing active skills list")
+        self.assertIn("k-method app", html, "index.html brand title must be 'k-method app'")
 
     def test_AC_3_websocket_client_contract(self):
         """

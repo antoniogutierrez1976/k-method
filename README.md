@@ -56,17 +56,17 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 
 ## Graphical & CLI Tools
 
-The repository provides both an interactive Antigravity 2.0 Graphical Webview and deterministic CLI tools implementing the **"Code > Prompt"** pattern.
+The repository provides both an interactive Graphical Webview (**k-method app**, replicating Antigravity 2.0 3-column layout) and deterministic CLI tools implementing the **"Code > Prompt"** pattern.
 
-### 1. Antigravity 2.0 Webview GUI (`run-gui.ps1` / `scripts/harness/gui/launch.py`)
+### 1. k-method app Graphical Studio (`run-gui.ps1` / `scripts/harness/gui/launch.py`)
 
-A modern, dark-mode 3-column desktop/browser application replicating **Antigravity 2.0**:
+A modern, dark-mode 3-column desktop/browser application (**k-method app**):
 - **Left Sidebar:** Workspace selector, LLM provider & model switcher, and embedded Karpathy v17 skills catalog.
 - **Central Chat Canvas:** Real-time token streaming, state badge progression, and human-in-the-loop spec approval action bar.
 - **Right Auxiliary Pane:** Tabbed views for *Artifacts* (`spec.md` & PR description), *Files Changed* (live Git diff), *TDD Verifier* (test logs), and *OKF Graph*.
 
 ```powershell
-# Launch Antigravity 2.0 Webview (auto-opens browser at http://127.0.0.1:8000):
+# Launch k-method app (auto-opens browser at http://127.0.0.1:8000):
 .\run-gui.ps1
 
 # Custom port or headless background mode:

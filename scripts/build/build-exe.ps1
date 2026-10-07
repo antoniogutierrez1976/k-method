@@ -1,4 +1,4 @@
-# PowerShell Build Script: k-method Antigravity 2.0 GUI Standalone Executable (.exe)
+# PowerShell Build Script: k-method app Standalone Executable (.exe)
 # Generates: dist/k-method-studio.exe
 
 $ErrorActionPreference = "Stop"

@@ -46,7 +46,7 @@ def parse_launcher_args(args: Optional[List[str]] = None) -> LauncherConfig:
     """
     Parses CLI launcher arguments.
     """
-    parser = argparse.ArgumentParser(description="k-method Antigravity 2.0 GUI Launcher")
+    parser = argparse.ArgumentParser(description="k-method app GUI Launcher")
     parser.add_argument(
         "--host",
         default="127.0.0.1",
@@ -96,7 +96,7 @@ def run_gui(host: str = "127.0.0.1", preferred_port: int = 8000, no_browser: boo
     url = f"http://{host}:{actual_port}"
 
     print("════════════════════════════════════════════════════════════════════")
-    print("       🚀 ANTIGRAVITY 2.0 - k-method SDLC GRAPHICAL RUNNER          ")
+    print("           🚀 k-method app - SDLC GRAPHICAL RUNNER                  ")
     print("════════════════════════════════════════════════════════════════════")
     print(f"  Servidor iniciado en: {url}")
     print("  Presiona Ctrl+C para detener el servidor.")

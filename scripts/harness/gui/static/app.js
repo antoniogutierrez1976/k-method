@@ -1,5 +1,5 @@
 /**
- * Antigravity 2.0 Webview Client.
+ * k-method app Webview Client.
  * Connects to the ASGI backend, streams SDLC lifecycle events, and manages the 3-column UI.
  */
 

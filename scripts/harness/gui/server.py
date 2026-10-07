@@ -1,5 +1,5 @@
 """
-FastAPI Server & Real-Time WebSocket Event Stream for k-method Antigravity 2.0 UI.
+FastAPI Server & Real-Time WebSocket Event Stream for k-method app.
 Provides REST and WebSocket endpoints connecting the browser to KMethodEngine.
 """
 import asyncio
@@ -75,7 +75,7 @@ def get_git_diff() -> str:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="k-method Antigravity 2.0 Backend", version="1.0.0")
+    app = FastAPI(title="k-method app Backend", version="1.0.0")
     stash_shield = StashShield()
 
     static_dir = get_static_dir()

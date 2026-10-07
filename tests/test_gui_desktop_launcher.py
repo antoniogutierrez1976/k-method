@@ -96,7 +96,7 @@ class TestGUIDesktopLauncher(unittest.TestCase):
             content = f.read()
 
         self.assertIn("run-gui.ps1", content, "README.md must document the GUI runner launcher")
-        self.assertIn("Antigravity 2.0", content, "README.md must reference the Antigravity 2.0 Webview")
+        self.assertIn("k-method app", content, "README.md must reference k-method app")
 
     def test_AC_6_packaging_spec_and_build_script(self):
         """

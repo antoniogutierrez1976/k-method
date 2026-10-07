@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    k-method Antigravity 2.0 Webview GUI Launcher.
+    k-method app GUI Launcher.
     Starts the local ASGI server and launches the graphical SDLC interface.
 
 .EXAMPLE
