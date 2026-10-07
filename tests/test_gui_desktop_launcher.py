@@ -98,6 +98,26 @@ class TestGUIDesktopLauncher(unittest.TestCase):
         self.assertIn("run-gui.ps1", content, "README.md must document the GUI runner launcher")
         self.assertIn("Antigravity 2.0", content, "README.md must reference the Antigravity 2.0 Webview")
 
+    def test_AC_6_packaging_spec_and_build_script(self):
+        """
+        AC-6: PyInstaller spec and build-exe.ps1 exist and declare valid bundling directives.
+        """
+        spec_path = os.path.join(REPO_ROOT, "packaging", "k-method-studio.spec")
+        self.assertTrue(os.path.exists(spec_path), "packaging/k-method-studio.spec must exist")
+
+        with open(spec_path, "r", encoding="utf-8") as f:
+            spec_content = f.read()
+        self.assertIn("k-method-studio", spec_content)
+        self.assertIn('"static"', spec_content)
+
+        build_script = os.path.join(REPO_ROOT, "scripts", "build", "build-exe.ps1")
+        self.assertTrue(os.path.exists(build_script), "scripts/build/build-exe.ps1 must exist")
+
+        with open(build_script, "r", encoding="utf-8") as f:
+            script_content = f.read()
+        self.assertIn("pyinstaller", script_content.lower())
+        self.assertIn("dist/k-method-studio.exe", script_content)
+
 
 if __name__ == "__main__":
     unittest.main()

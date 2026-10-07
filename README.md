@@ -71,6 +71,9 @@ A modern, dark-mode 3-column desktop/browser application replicating **Antigravi
 
 # Custom port or headless background mode:
 .\run-gui.ps1 -Port 8080 -NoBrowser
+
+# Compile as a Standalone Windows Executable (dist/k-method-studio.exe):
+.\scripts\build\build-exe.ps1
 ```
 
 ---

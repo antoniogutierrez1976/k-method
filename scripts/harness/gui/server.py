@@ -14,10 +14,24 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, FileResponse
 from starlette.staticfiles import StaticFiles
 
-# Ensure repo root is on sys.path
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+def get_repo_root() -> str:
+    if getattr(sys, "frozen", False):
+        return os.environ.get("K_METHOD_WORKSPACE", os.getcwd())
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
+REPO_ROOT = get_repo_root()
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
+
+def get_static_dir() -> str:
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        for candidate in [
+            os.path.join(sys._MEIPASS, "scripts", "harness", "gui", "static"),
+            os.path.join(sys._MEIPASS, "static"),
+        ]:
+            if os.path.exists(candidate):
+                return candidate
+    return os.path.join(os.path.dirname(__file__), "static")
 
 from scripts.harness.engine.embedded_skills import list_embedded_skills
 from scripts.harness.engine.state_machine import (
@@ -64,7 +78,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="k-method Antigravity 2.0 Backend", version="1.0.0")
     stash_shield = StashShield()
 
-    static_dir = os.path.join(os.path.dirname(__file__), "static")
+    static_dir = get_static_dir()
     if os.path.exists(static_dir):
         app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
