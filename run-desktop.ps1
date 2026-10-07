@@ -33,7 +33,7 @@ if ($Dev) {
 # If packaged executable exists, run it directly
 if (Test-Path $PackagedExe) {
     Write-Host "[k-method app] Lanzando aplicación empaquetada..." -ForegroundColor Green
-    Start-Process -FilePath $PackagedExe
+    Start-Process -FilePath $PackagedExe -WorkingDirectory $PSScriptRoot
     exit 0
 } else {
     Write-Host "[k-method app] Aplicación empaquetada no encontrada. Ejecutando compilación previa..." -ForegroundColor Yellow
@@ -41,7 +41,7 @@ if (Test-Path $PackagedExe) {
     try {
         & pnpm run build
         if (Test-Path $PackagedExe) {
-            Start-Process -FilePath $PackagedExe
+            Start-Process -FilePath $PackagedExe -WorkingDirectory $PSScriptRoot
         }
     } finally {
         Pop-Location

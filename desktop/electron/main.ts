@@ -27,7 +27,9 @@ async function ensureBackendRunning() {
   }
 
   console.log('[Sidecar] Launching Python ASGI backend sidecar...');
-  const repoRoot = path.resolve(__dirname, '../../');
+  const repoRoot = app.isPackaged
+    ? (process.env.K_METHOD_WORKSPACE || process.cwd())
+    : path.resolve(__dirname, '../../');
   const pythonScript = path.join(repoRoot, 'scripts', 'harness', 'gui', 'launch.py');
 
   try {

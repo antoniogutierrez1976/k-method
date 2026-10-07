@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "k-method app - Enterprise Karpathy v0 SDLC Desktop Studio",
   "main": "dist-electron/main.js",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder --dir",
