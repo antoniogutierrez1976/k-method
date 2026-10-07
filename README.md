@@ -6,11 +6,11 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 
 | Skill | Directory | Layer / Role | Description |
 | :--- | :--- | :--- | :--- |
-| **`k-orchestrator`** | [`k-orchestrator/`](file:///d:/dev/k-method/k-orchestrator/SKILL.md) | **Master Orchestrator** | State-machine supervisor dispatching ephemeral subagents across the complete SDLC pipeline. |
-| **`k-spec`** | [`k-spec/`](file:///d:/dev/k-method/k-spec/SKILL.md) | **Layer 1: Spec** | Intent classification (`/bugfix`, `/chore`, `/iterate`), 6-AC hard limit, OWASP Threat Modeling. |
-| **`k-verifier`** | [`k-verifier/`](file:///d:/dev/k-method/k-verifier/SKILL.md) | **Layer 2: Verifier** | Red-Green-Refactor, mutation testing, flaky 3x pass, circuit breaker, ≥85% branch coverage, VRT. |
-| **`k-environment`** | [`k-environment/`](file:///d:/dev/k-method/k-environment/SKILL.md) | **Layer 3: Environment** | `AGENTS.md` constitution, Stash Shield, Git branch isolation, atomic rollback, IaC & `.env` sync. |
-| **`k-wiki`** | [`k-wiki/`](file:///d:/dev/k-method/k-wiki/SKILL.md) | **Knowledge Graph** | Open Knowledge Format (OKF) engine, typed frontmatter, ADR lifecycle, [`k-wiki/scripts/okf-lint.py`](file:///d:/dev/k-method/k-wiki/scripts/okf-lint.py) compiler. |
+| **`k-orchestrator`** | [`.agents/skills/k-orchestrator/`](file:///d:/dev/k-method/.agents/skills/k-orchestrator/SKILL.md) | **Master Orchestrator** | State-machine supervisor dispatching ephemeral subagents across the complete SDLC pipeline. |
+| **`k-spec`** | [`.agents/skills/k-spec/`](file:///d:/dev/k-method/.agents/skills/k-spec/SKILL.md) | **Layer 1: Spec** | Intent classification (`/bugfix`, `/chore`, `/iterate`), 6-AC hard limit, OWASP Threat Modeling. |
+| **`k-verifier`** | [`.agents/skills/k-verifier/`](file:///d:/dev/k-method/.agents/skills/k-verifier/SKILL.md) | **Layer 2: Verifier** | Red-Green-Refactor, mutation testing, flaky 3x pass, circuit breaker, ≥85% branch coverage, VRT. |
+| **`k-environment`** | [`.agents/skills/k-environment/`](file:///d:/dev/k-method/.agents/skills/k-environment/SKILL.md) | **Layer 3: Environment** | `AGENTS.md` constitution, Stash Shield, Git branch isolation, atomic rollback, IaC & `.env` sync. |
+| **`k-wiki`** | [`.agents/skills/k-wiki/`](file:///d:/dev/k-method/.agents/skills/k-wiki/SKILL.md) | **Knowledge Graph** | Open Knowledge Format (OKF) engine, typed frontmatter, ADR lifecycle, [`.agents/skills/k-wiki/scripts/okf-lint.py`](file:///d:/dev/k-method/.agents/skills/k-wiki/scripts/okf-lint.py) compiler. |
 
 
 ## The Day-2 Maintenance Evolutions (v17 Capstones):
@@ -53,9 +53,11 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 
 ## Installation & Usage
 
-Clone or copy the `k-*` skill directories into your agent skills path (e.g. `.claude/skills/` or `.agents/skills/`):
+This repository is structured natively as an Antigravity skills repository.
+
+To use these skills in another project, clone the repo and copy `.agents/skills/*` into your target workspace:
 
 ```bash
 git clone https://github.com/antoniogutierrez1976/k-method.git
-cp -r k-method/k-* .claude/skills/
+cp -r k-method/.agents/skills/* mi-proyecto/.agents/skills/
 ```
