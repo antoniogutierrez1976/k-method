@@ -56,31 +56,41 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 
 ## Graphical & CLI Tools
 
-The repository provides both an interactive Graphical Webview (**k-method app**, replicating Antigravity 2.0 3-column layout) and deterministic CLI tools implementing the **"Code > Prompt"** pattern.
+The repository provides both a native Desktop Studio (**k-method app**, built with Vite + React + Tailwind + Electron), an interactive Graphical Webview, and deterministic CLI tools implementing the **"Code > Prompt"** pattern.
 
-### 1. k-method app Graphical Studio (`run-gui.ps1` / `scripts/harness/gui/launch.py`)
+### 1. k-method app Electron Desktop Studio (`run-desktop.ps1` / `desktop/`)
 
-A modern, dark-mode 3-column desktop/browser application (**k-method app**):
-- **Left Sidebar:** Workspace selector, LLM provider & model switcher, and embedded Karpathy v0 skills catalog.
-- **Central Chat Canvas:** Real-time token streaming, state badge progression, and human-in-the-loop spec approval action bar.
-- **Right Auxiliary Pane:** Tabbed views for *Artifacts* (`spec.md` & PR description), *Files Changed* (live Git diff), *TDD Verifier* (test logs), and *OKF Graph*.
+A high-performance, dark-mode 3-column native desktop application (**k-method app**):
+- **Native Packaging:** Packaged with Electron & Vite (`release/win-unpacked/k-method app.exe`).
+- **Left Sidebar:** Real workspace selector, LLM provider & model switcher, and embedded Karpathy v0 skills catalog.
+- **Central Chat Canvas:** Real-time token streaming, animated collapsible phase cards, and human-in-the-loop spec approval action bar.
+- **Right Auxiliary Pane:** Tabbed views for *Artifacts* (`spec.md` & `PR-DESCRIPTION.md`), *Files Changed* (live syntax-colored Git diff), *TDD Verifier* console, and *OKF Graph*.
 
 ```powershell
-# Launch k-method app (auto-opens browser at http://127.0.0.1:8000):
+# Launch the packaged native desktop app (or compile if first run):
+.\run-desktop.ps1
+
+# Launch in Development Mode with Hot Module Replacement (HMR):
+.\run-desktop.ps1 -Dev
+```
+
+### 2. k-method app Webview Studio (`run-gui.ps1` / `scripts/harness/gui/launch.py`)
+
+Local ASGI server (FastAPI + Starlette WebSockets) providing browser access:
+
+```powershell
+# Launch browser studio (auto-opens at http://127.0.0.1:8000):
 .\run-gui.ps1
 
 # Custom port or headless background mode:
 .\run-gui.ps1 -Port 8080 -NoBrowser
-
-# Compile as a Standalone Windows Executable (dist/k-method-studio.exe):
-.\scripts\build\build-exe.ps1
 ```
 
 ---
 
-### 2. Interactive Windows Skills Runner CLI (`k_runner.py` / `run-harness.ps1`)
+### 3. Interactive Skills Runner CLI (`k_runner.py` / `run-harness.ps1`)
 
-An interactive terminal application with Antigravity-style ANSI visual presentation (header banners, auxiliary status panels, human approval gates, and deadlock circuit breaker alerts).
+An interactive terminal application with modern ANSI visual presentation (header banners, auxiliary status panels, human approval gates, and deadlock circuit breaker alerts).
 
 ```powershell
 # 🏢 Professional Mode (GitHub Copilot SDK + OpenAI GPT-6 Luna / Sol):

@@ -11,6 +11,7 @@ import time
 from typing import Optional, Dict, Any, Callable
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from starlette.staticfiles import StaticFiles
 
@@ -194,6 +195,14 @@ def get_all_provider_models() -> dict:
 def create_app() -> FastAPI:
     app = FastAPI(title="k-method app Backend", version="1.0.0")
     stash_shield = StashShield()
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     static_dir = get_static_dir()
     if os.path.exists(static_dir):
