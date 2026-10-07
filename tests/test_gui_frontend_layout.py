@@ -108,6 +108,18 @@ class TestGUIFrontendLayout(unittest.TestCase):
         self.assertIn('data-tab="tdd"', html, "Missing tdd tab")
         self.assertIn('data-tab="okf"', html, "Missing okf graph tab")
 
+    def test_AC_6_dynamic_model_filtering_contract(self):
+        """
+        AC-6: app.js defines updateModelOptions and hooks provider-select change event to update model-select.
+        """
+        app_js_path = os.path.join(self.static_dir, "app.js")
+        with open(app_js_path, "r", encoding="utf-8") as f:
+            js = f.read()
+
+        self.assertIn("updateModelOptions", js, "app.js must define updateModelOptions")
+        self.assertIn("provider-select", js, "app.js must bind to provider-select")
+        self.assertIn("model-select", js, "app.js must update model-select options")
+
 
 if __name__ == "__main__":
     unittest.main()

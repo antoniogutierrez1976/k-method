@@ -161,6 +161,31 @@ class TestGUIBackendAPI(unittest.TestCase):
             self.assertEqual(resp.get("event"), "error")
             self.assertIn("Invalid JSON", resp.get("message", ""))
 
+    def test_AC_6_models_endpoint_and_provider_catalog(self):
+        """
+        AC-6: Backend exposes /api/models and /api/status with allowed models per provider.
+        """
+        res = self.client.get("/api/models")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("models", data)
+        models = data["models"]
+        self.assertIn("antigravity", models)
+        self.assertIn("copilot", models)
+        self.assertIn("mock", models)
+
+        antigravity_model_ids = [m["id"] for m in models["antigravity"]]
+        self.assertIn("gemini-2.5-flash", antigravity_model_ids)
+
+        copilot_model_ids = [m["id"] for m in models["copilot"]]
+        self.assertIn("gpt-6-luna", copilot_model_ids)
+
+        # Also verify /api/status includes models
+        status_res = self.client.get("/api/status")
+        self.assertEqual(status_res.status_code, 200)
+        status_data = status_res.json()
+        self.assertIn("models", status_data)
+
 
 if __name__ == "__main__":
     unittest.main()

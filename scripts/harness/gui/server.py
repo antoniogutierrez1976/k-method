@@ -74,6 +74,25 @@ def get_git_diff() -> str:
         return ""
 
 
+SUPPORTED_PROVIDER_MODELS = {
+    "antigravity": [
+        {"id": "gemini-2.5-flash", "name": "gemini-2.5-flash (Recomendado)", "default": True},
+        {"id": "gemini-2.5-pro", "name": "gemini-2.5-pro (Razonamiento Complejo)", "default": False},
+        {"id": "gemini-3.8-flash", "name": "gemini-3.8-flash (SDK Default)", "default": False},
+        {"id": "gemini-1.5-pro", "name": "gemini-1.5-pro (Contexto Extendido)", "default": False},
+    ],
+    "copilot": [
+        {"id": "gpt-6-luna", "name": "gpt-6-luna (Copilot Default)", "default": True},
+        {"id": "gpt-6.1-sol", "name": "gpt-6.1-sol (Razonamiento Copilot)", "default": False},
+        {"id": "claude-3.5-sonnet", "name": "claude-3.5-sonnet (Copilot)", "default": False},
+        {"id": "gpt-4o", "name": "gpt-4o (Multimodal)", "default": False},
+    ],
+    "mock": [
+        {"id": "mock-model", "name": "mock-model (Offline Testing)", "default": True},
+    ],
+}
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="k-method app Backend", version="1.0.0")
     stash_shield = StashShield()
@@ -95,6 +114,7 @@ def create_app() -> FastAPI:
             "branch": get_current_git_branch(),
             "is_clean": stash_shield.is_clean(cwd=REPO_ROOT),
             "provider_default": redact_secrets(raw_provider),
+            "models": SUPPORTED_PROVIDER_MODELS,
         }
 
     @app.get("/api/diff")
@@ -104,6 +124,10 @@ def create_app() -> FastAPI:
     @app.get("/api/skills")
     async def get_skills():
         return {"skills": list_embedded_skills()}
+
+    @app.get("/api/models")
+    async def get_models():
+        return {"models": SUPPORTED_PROVIDER_MODELS}
 
     @app.websocket("/ws/sdlc")
     async def websocket_sdlc_endpoint(websocket: WebSocket):

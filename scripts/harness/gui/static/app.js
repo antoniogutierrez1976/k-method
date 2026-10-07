@@ -14,6 +14,46 @@ function escapeHtml(unsafeText) {
     .replace(/'/g, "&#039;");
 }
 
+const DEFAULT_PROVIDER_MODELS = {
+  antigravity: [
+    { id: "gemini-2.5-flash", name: "gemini-2.5-flash (Recomendado)", default: true },
+    { id: "gemini-2.5-pro", name: "gemini-2.5-pro (Razonamiento Complejo)" },
+    { id: "gemini-3.8-flash", name: "gemini-3.8-flash (SDK Default)" },
+    { id: "gemini-1.5-pro", name: "gemini-1.5-pro (Contexto Extendido)" },
+  ],
+  copilot: [
+    { id: "gpt-6-luna", name: "gpt-6-luna (Copilot Default)", default: true },
+    { id: "gpt-6.1-sol", name: "gpt-6.1-sol (Razonamiento Copilot)" },
+    { id: "claude-3.5-sonnet", name: "claude-3.5-sonnet (Copilot)" },
+    { id: "gpt-4o", name: "gpt-4o (Multimodal)" },
+  ],
+  mock: [
+    { id: "mock-model", name: "mock-model (Offline Testing)", default: true },
+  ],
+};
+
+let availableProviderModels = DEFAULT_PROVIDER_MODELS;
+
+function updateModelOptions(selectedProvider, preselectedModel = null) {
+  const modelSelect = document.getElementById("model-select");
+  if (!modelSelect) return;
+
+  const models = (availableProviderModels && availableProviderModels[selectedProvider]) ||
+                 DEFAULT_PROVIDER_MODELS[selectedProvider] ||
+                 [];
+
+  modelSelect.innerHTML = "";
+  models.forEach((m) => {
+    const opt = document.createElement("option");
+    opt.value = m.id;
+    opt.textContent = m.name || m.id;
+    if (preselectedModel ? m.id === preselectedModel : m.default) {
+      opt.selected = true;
+    }
+    modelSelect.appendChild(opt);
+  });
+}
+
 let ws = null;
 let currentAgentMessageEl = null;
 let currentRawContent = "";
@@ -68,6 +108,21 @@ async function loadStatusAndSkills() {
       const shield = document.getElementById("stash-shield-status");
       shield.textContent = data.is_clean ? "🛡️ Clean" : "⚠️ Dirty";
       shield.className = `status-badge ${data.is_clean ? "clean" : "dirty"}`;
+
+      if (data.models) {
+        availableProviderModels = data.models;
+      }
+      if (data.provider_default) {
+        const providerSelect = document.getElementById("provider-select");
+        if (providerSelect && Array.from(providerSelect.options).some(o => o.value === data.provider_default)) {
+          providerSelect.value = data.provider_default;
+        }
+      }
+    }
+
+    const providerSelect = document.getElementById("provider-select");
+    if (providerSelect) {
+      updateModelOptions(providerSelect.value);
     }
 
     const resSkills = await fetch("/api/skills");
@@ -259,6 +314,13 @@ function initActionButtons() {
     }
     appendChatEvent("🛑 Especificación rechazada para revisión.", "user");
   });
+
+  const providerSelect = document.getElementById("provider-select");
+  if (providerSelect) {
+    providerSelect.addEventListener("change", (e) => {
+      updateModelOptions(e.target.value);
+    });
+  }
 
   const refreshDiffBtn = document.getElementById("btn-refresh-diff");
   if (refreshDiffBtn) {
