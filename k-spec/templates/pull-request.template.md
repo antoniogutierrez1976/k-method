@@ -19,7 +19,7 @@
 - [x] **Branch Coverage Floor:** ≥85% branch coverage achieved on modified domain files.
 - [x] **SemVer & Contract Drift Guardian:** Public API signatures and database schemas preserved.
 - [x] **CI Build & Packaging Sanity:** Production compilation (`pnpm build`) and vulnerability audit (`pnpm audit`) clean with exit code 0.
-- [x] **OKF Knowledge Base Lint:** `.tools/okf-lint.py --compile-index` passed without broken links.
+- [x] **OKF Knowledge Base Lint:** `k-wiki/scripts/okf-lint.py --compile-index` passed without broken links.
 
 ## 4. Release Strategy & Operational Rollback Plan
 - **Deployment Strategy:** `[Direct / Feature Flag: FLAG_NAME / Canary]`

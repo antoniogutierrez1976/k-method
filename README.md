@@ -10,7 +10,7 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 | **`k-spec`** | [`k-spec/`](file:///d:/dev/k-method/k-spec/SKILL.md) | **Layer 1: Spec** | Intent classification (`/bugfix`, `/chore`, `/iterate`), 6-AC hard limit, OWASP Threat Modeling. |
 | **`k-verifier`** | [`k-verifier/`](file:///d:/dev/k-method/k-verifier/SKILL.md) | **Layer 2: Verifier** | Red-Green-Refactor, mutation testing, flaky 3x pass, circuit breaker, ≥85% branch coverage, VRT. |
 | **`k-environment`** | [`k-environment/`](file:///d:/dev/k-method/k-environment/SKILL.md) | **Layer 3: Environment** | `AGENTS.md` constitution, Stash Shield, Git branch isolation, atomic rollback, IaC & `.env` sync. |
-| **`k-wiki`** | [`k-wiki/`](file:///d:/dev/k-method/k-wiki/SKILL.md) | **Knowledge Graph** | Open Knowledge Format (OKF) engine, typed frontmatter, ADR lifecycle, `okf-lint.py` compiler. |
+| **`k-wiki`** | [`k-wiki/`](file:///d:/dev/k-method/k-wiki/SKILL.md) | **Knowledge Graph** | Open Knowledge Format (OKF) engine, typed frontmatter, ADR lifecycle, [`k-wiki/scripts/okf-lint.py`](file:///d:/dev/k-method/k-wiki/scripts/okf-lint.py) compiler. |
 
 
 ## The Day-2 Maintenance Evolutions (v17 Capstones):
@@ -28,13 +28,13 @@ Enterprise-grade SDLC software engineering pipeline based on Andrej Karpathy's 3
 - **Forensic Bug Routing (`/bugfix`):** Strict isolation of maintenance patches (`specs/{feature}/bugs/BUG-{NNN}.md`).
 - **Zero-Downtime Database Migration Protocol:** Expand & Contract for persistence models.
 - **Release Strategy, Rollback & Observability SLO Contracts:** Enriched spec templates for operational readiness.
-- **Robust Multi-line YAML Parser in `okf-lint.py`:** Dependency-free YAML parsing for OKF graphs.
+- **Robust Multi-line YAML Parser in `k-wiki/scripts/okf-lint.py`:** Dependency-free YAML parsing for OKF graphs.
 - **Branch Coverage Floor (≥85%):** Strict gating on modified domain logic.
 - **Stash Shield & Atomic Rollback Protocol (`/task-abort`):** Guards against dirty working trees.
 - **Config & Environment Drift Prevention:** Automatic `.env.example` and IaC sync.
 - **Trunk Staleness & Rebase Guard:** Validates upstream divergence before regression.
-- **Tooling Anti-Sabotage Rule:** Explicitly prohibits agents from modifying `.tools/` scripts or `.claude/skills/`.
-- **Self-Contained OKF Compiler Tool:** Auto-contained within the skill to prevent path collisions.
+- **Tooling Anti-Sabotage Rule:** Explicitly prohibits agents from modifying skill scripts (`k-wiki/scripts/`) or `.claude/skills/` / `.agents/skills/`.
+- **Self-Contained OKF Compiler Tool:** Auto-contained within `k-wiki/scripts/` to eliminate root collisions and ensure skill portability.
 - **Environment Auto-Bootstrapping (`/init-environment` & `/constitution`):** Single-step initialization of `AGENTS.md` and `knowledge-base/`.
 - **Flaky Test Immunity Pass (Stochastic 3x Run):** 3 consecutive executions for async/timing tests.
 - **Bidirectional Traceability Matrix:** Links AC checkboxes to test identifiers.

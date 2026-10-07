@@ -58,7 +58,7 @@ Coordinates development according to Andrej Karpathy's 3 layers, hardened with e
   - Activates branch isolation (`git checkout -b feat/[name]`, `fix/[id]`, or `chore/[name]`). Supports atomic rollback via `/task-abort`.
   - Configures compact test flags (`--bail`, `--onlyFailures`).
   - Runs OKF linter to assert initial graph validity.
-  - Enforces **Tier 3 Tooling Protection**: Never edits files in `.tools/` or `.claude/skills/`.
+  - Enforces **Tier 3 Tooling Protection**: Never edits files in skill scripts (`k-wiki/scripts/`) or `.claude/skills/` / `.agents/skills/`.
 
 ### Stage 3: Verifier & Implementer (`k-verifier`)
 - **Context:** Fresh session. Reads ONLY `AGENTS.md` + spec artifact.
@@ -79,7 +79,7 @@ Coordinates development according to Andrej Karpathy's 3 layers, hardened with e
 - **Context:** Fresh session. Reads completed spec + `SCHEMA.md`.
 - **Actions:**
   - Selectively compiles ADRs / gotchas into `wiki/` with OKF frontmatter.
-  - Executes `okf-lint.py --compile-index` to validate links and rebuild `wiki/index.md` deterministically.
+  - Executes `k-wiki/scripts/okf-lint.py --compile-index` to validate links and rebuild `wiki/index.md` deterministically.
   - Generates commit message per Commit Metadata Standard.
   - Generates Pull Request description from `templates/pull-request.template.md` incorporating verified AC evidence, release strategy, rollback plans, and observability alerts.
   - Marks Checkpoint 8 `[x]` in the spec.

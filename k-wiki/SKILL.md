@@ -63,6 +63,7 @@ Only compile new permanent pages into `wiki/` when the change involves:
 - Feed this context directly into Layer 3 (Environment Check) before starting new specifications.
 
 ### 4. Lint (`/wiki-lint`)
+- Execute deterministic validator: `python3 scripts/okf-lint.py --compile-index` (relative to skill or `k-wiki/scripts/okf-lint.py`).
 - Scan all markdown files in `wiki/`:
   - Broken links (`[[note]]` pointing to missing files).
   - Orphan pages (no inbound links).

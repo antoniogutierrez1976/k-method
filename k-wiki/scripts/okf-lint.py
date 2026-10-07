@@ -118,7 +118,7 @@ def compile_index(all_nodes):
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     lines = [
         "# Knowledge Base Index (OKF Graph)",
-        f"> Autogenerado deterministamente por `.tools/okf-lint.py --compile-index` el {now}.",
+        f"> Autogenerado deterministamente por `k-wiki/scripts/okf-lint.py --compile-index` el {now}.",
         "",
         "## 1. Architectural Decisions (ADRs)",
         "\n".join(decisions) if decisions else "- *Sin decisiones registradas.*",
