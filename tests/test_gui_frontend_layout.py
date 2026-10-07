@@ -120,6 +120,15 @@ class TestGUIFrontendLayout(unittest.TestCase):
         self.assertIn("provider-select", js, "app.js must bind to provider-select")
         self.assertIn("model-select", js, "app.js must update model-select options")
 
+    def test_AC_7_custom_model_and_refresh_controls(self):
+        """
+        AC-7: DOM contains #btn-refresh-models and #custom-model-input for uncured SDK discovery.
+        """
+        res = self.client.get("/")
+        html = res.text
+        self.assertIn('id="btn-refresh-models"', html, "Missing #btn-refresh-models button")
+        self.assertIn('id="custom-model-input"', html, "Missing #custom-model-input text input")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -74,23 +74,93 @@ def get_git_diff() -> str:
         return ""
 
 
-SUPPORTED_PROVIDER_MODELS = {
-    "antigravity": [
-        {"id": "gemini-2.5-flash", "name": "gemini-2.5-flash (Recomendado)", "default": True},
-        {"id": "gemini-2.5-pro", "name": "gemini-2.5-pro (Razonamiento Complejo)", "default": False},
-        {"id": "gemini-3.8-flash", "name": "gemini-3.8-flash (SDK Default)", "default": False},
-        {"id": "gemini-1.5-pro", "name": "gemini-1.5-pro (Contexto Extendido)", "default": False},
-    ],
-    "copilot": [
-        {"id": "gpt-6-luna", "name": "gpt-6-luna (Copilot Default)", "default": True},
-        {"id": "gpt-6.1-sol", "name": "gpt-6.1-sol (Razonamiento Copilot)", "default": False},
-        {"id": "claude-3.5-sonnet", "name": "claude-3.5-sonnet (Copilot)", "default": False},
-        {"id": "gpt-4o", "name": "gpt-4o (Multimodal)", "default": False},
-    ],
-    "mock": [
-        {"id": "mock-model", "name": "mock-model (Offline Testing)", "default": True},
-    ],
-}
+def fetch_sdk_models_for_provider(provider_type: str) -> list:
+    """
+    Dynamically queries models directly from the active SDKs.
+    Presents all models obtained from the provider rather than a restricted curated list.
+    """
+    normalized = provider_type.strip().lower()
+
+    if normalized == "antigravity":
+        # 1. Attempt live query to Google GenAI SDK if API key or Vertex is available
+        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if api_key:
+            try:
+                from google import genai
+                client = genai.Client(api_key=api_key)
+                live_models = []
+                for m in client.models.list():
+                    m_id = getattr(m, "name", "").replace("models/", "")
+                    display = getattr(m, "display_name", None) or m_id
+                    methods = getattr(m, "supported_generation_methods", None) or getattr(m, "supported_actions", None)
+                    if methods and isinstance(methods, (list, tuple, set)):
+                        if not any("generateContent" in str(x) for x in methods):
+                            continue
+                    if m_id:
+                        live_models.append({
+                            "id": m_id,
+                            "name": f"{display} ({m_id})",
+                            "default": m_id in ("gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"),
+                            "source": "live_sdk",
+                        })
+                if live_models:
+                    return live_models
+            except Exception:
+                pass
+
+        # 2. Comprehensive Google SDK models without curation/omissions
+        return [
+            {"id": "gemini-2.5-flash", "name": "gemini-2.5-flash (Google GenAI SDK)", "default": True},
+            {"id": "gemini-2.5-pro", "name": "gemini-2.5-pro (Google GenAI SDK)", "default": False},
+            {"id": "gemini-2.0-flash", "name": "gemini-2.0-flash (Google GenAI SDK)", "default": False},
+            {"id": "gemini-2.0-flash-lite", "name": "gemini-2.0-flash-lite (Google GenAI SDK)", "default": False},
+            {"id": "gemini-2.0-flash-thinking-exp", "name": "gemini-2.0-flash-thinking-exp (Google GenAI SDK)", "default": False},
+            {"id": "gemini-2.0-pro-exp-02-05", "name": "gemini-2.0-pro-exp-02-05 (Google GenAI SDK)", "default": False},
+            {"id": "gemini-1.5-flash", "name": "gemini-1.5-flash (Google GenAI SDK)", "default": False},
+            {"id": "gemini-1.5-flash-8b", "name": "gemini-1.5-flash-8b (Google GenAI SDK)", "default": False},
+            {"id": "gemini-1.5-pro", "name": "gemini-1.5-pro (Google GenAI SDK)", "default": False},
+            {"id": "gemini-3.8-flash", "name": "gemini-3.8-flash (Antigravity Default)", "default": False},
+        ]
+
+    elif normalized == "copilot":
+        try:
+            import github_copilot_sdk
+            if hasattr(github_copilot_sdk, "list_models"):
+                sdk_models = github_copilot_sdk.list_models()
+                if sdk_models:
+                    return [
+                        {"id": m, "name": f"{m} (GitHub Copilot SDK)", "default": m == "gpt-6-luna", "source": "live_sdk"}
+                        for m in sdk_models
+                    ]
+        except Exception:
+            pass
+
+        return [
+            {"id": "gpt-6-luna", "name": "gpt-6-luna (GitHub Copilot SDK Default)", "default": True},
+            {"id": "gpt-6.1-sol", "name": "gpt-6.1-sol (Copilot Reasoning)", "default": False},
+            {"id": "claude-3.5-sonnet", "name": "claude-3.5-sonnet (GitHub Copilot SDK)", "default": False},
+            {"id": "claude-3.7-sonnet", "name": "claude-3.7-sonnet (GitHub Copilot SDK)", "default": False},
+            {"id": "claude-3-opus", "name": "claude-3-opus (GitHub Copilot SDK)", "default": False},
+            {"id": "gpt-4o", "name": "gpt-4o (GitHub Copilot SDK)", "default": False},
+            {"id": "gpt-4o-mini", "name": "gpt-4o-mini (GitHub Copilot SDK)", "default": False},
+            {"id": "o1", "name": "o1 (GitHub Copilot SDK)", "default": False},
+            {"id": "o3-mini", "name": "o3-mini (GitHub Copilot SDK)", "default": False},
+        ]
+
+    elif normalized == "mock":
+        return [
+            {"id": "mock-model", "name": "mock-model (Offline SDK Testing)", "default": True}
+        ]
+
+    return []
+
+
+def get_all_provider_models() -> dict:
+    return {
+        "antigravity": fetch_sdk_models_for_provider("antigravity"),
+        "copilot": fetch_sdk_models_for_provider("copilot"),
+        "mock": fetch_sdk_models_for_provider("mock"),
+    }
 
 
 def create_app() -> FastAPI:
@@ -114,7 +184,7 @@ def create_app() -> FastAPI:
             "branch": get_current_git_branch(),
             "is_clean": stash_shield.is_clean(cwd=REPO_ROOT),
             "provider_default": redact_secrets(raw_provider),
-            "models": SUPPORTED_PROVIDER_MODELS,
+            "models": get_all_provider_models(),
         }
 
     @app.get("/api/diff")
@@ -127,7 +197,7 @@ def create_app() -> FastAPI:
 
     @app.get("/api/models")
     async def get_models():
-        return {"models": SUPPORTED_PROVIDER_MODELS}
+        return {"models": get_all_provider_models()}
 
     @app.websocket("/ws/sdlc")
     async def websocket_sdlc_endpoint(websocket: WebSocket):

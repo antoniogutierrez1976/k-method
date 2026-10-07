@@ -52,6 +52,22 @@ function updateModelOptions(selectedProvider, preselectedModel = null) {
     }
     modelSelect.appendChild(opt);
   });
+
+  const customOpt = document.createElement("option");
+  customOpt.value = "__custom__";
+  customOpt.textContent = "✍️ Escribir modelo personalizado...";
+  modelSelect.appendChild(customOpt);
+
+  const customInput = document.getElementById("custom-model-input");
+  if (customInput) {
+    if (preselectedModel && !models.some(m => m.id === preselectedModel)) {
+      customOpt.selected = true;
+      customInput.value = preselectedModel;
+      customInput.style.display = "block";
+    } else {
+      customInput.style.display = "none";
+    }
+  }
 }
 
 let ws = null;
@@ -322,6 +338,43 @@ function initActionButtons() {
     });
   }
 
+  const modelSelect = document.getElementById("model-select");
+  const customInput = document.getElementById("custom-model-input");
+  if (modelSelect && customInput) {
+    modelSelect.addEventListener("change", (e) => {
+      if (e.target.value === "__custom__") {
+        customInput.style.display = "block";
+        customInput.focus();
+      } else {
+        customInput.style.display = "none";
+      }
+    });
+  }
+
+  const refreshModelsBtn = document.getElementById("btn-refresh-models");
+  if (refreshModelsBtn) {
+    refreshModelsBtn.addEventListener("click", async () => {
+      const origText = refreshModelsBtn.innerHTML;
+      refreshModelsBtn.innerHTML = "<span>⏳ Consultando SDK...</span>";
+      try {
+        const res = await fetch("/api/models");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.models) {
+            availableProviderModels = data.models;
+            const currentProvider = document.getElementById("provider-select").value;
+            const currentModel = document.getElementById("model-select").value;
+            updateModelOptions(currentProvider, currentModel);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to refresh models from SDK:", err);
+      } finally {
+        refreshModelsBtn.innerHTML = origText;
+      }
+    });
+  }
+
   const refreshDiffBtn = document.getElementById("btn-refresh-diff");
   if (refreshDiffBtn) {
     refreshDiffBtn.addEventListener("click", async () => {
@@ -344,7 +397,11 @@ function initActionButtons() {
     if (!task) return;
 
     const provider = document.getElementById("provider-select").value;
-    const model = document.getElementById("model-select").value;
+    let model = document.getElementById("model-select").value;
+    if (model === "__custom__") {
+      const customVal = document.getElementById("custom-model-input")?.value?.trim();
+      model = customVal || (provider === "antigravity" ? "gemini-2.5-flash" : "gpt-6-luna");
+    }
 
     appendChatEvent(task, "user");
     input.value = "";

@@ -186,6 +186,27 @@ class TestGUIBackendAPI(unittest.TestCase):
         status_data = status_res.json()
         self.assertIn("models", status_data)
 
+    def test_AC_7_live_sdk_model_discovery(self):
+        """
+        AC-7: fetch_sdk_models_for_provider queries google.genai.Client.models.list() when API key is set.
+        """
+        mock_model_1 = MagicMock()
+        mock_model_1.name = "models/gemini-ultra-special"
+        mock_model_1.display_name = "Gemini Ultra Special"
+        mock_model_1.supported_actions = ["generateContent"]
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "dummy_test_key"}):
+            with patch("google.genai.Client") as mock_client_cls:
+                mock_instance = MagicMock()
+                mock_instance.models.list.return_value = [mock_model_1]
+                mock_client_cls.return_value = mock_instance
+
+                res = self.client.get("/api/models")
+                self.assertEqual(res.status_code, 200)
+                models = res.json()["models"]["antigravity"]
+                ids = [m["id"] for m in models]
+                self.assertIn("gemini-ultra-special", ids)
+
 
 if __name__ == "__main__":
     unittest.main()
