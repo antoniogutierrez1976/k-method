@@ -63,6 +63,8 @@ def parse_frontmatter(content):
                 elif not val_clean:
                     # Will receive indented list items in following lines
                     meta[current_key] = []
+                elif val_clean.lower() in ["null", "none", "~"]:
+                    meta[current_key] = None
                 else:
                     meta[current_key] = val_clean.strip('"').strip("'")
             else:
@@ -114,7 +116,7 @@ def compile_index(all_nodes):
         summary_line = f"- [[{name}]] (`{status}`) - *{domain}*"
         
         superseded_by = fm.get("superseded_by")
-        if superseded_by:
+        if superseded_by and str(superseded_by).lower() not in ["null", "none", "~", ""]:
             target = superseded_by if isinstance(superseded_by, str) else str(superseded_by)
             summary_line += f" -> reemplazado por [[{target.strip('[]')}]]"
 
