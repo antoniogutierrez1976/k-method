@@ -173,6 +173,18 @@ class TestProviderAdapters(unittest.IsolatedAsyncioTestCase):
                 agy_p._spawn_agent("Sys")
             self.assertIn("Google Antigravity SDK is not installed", str(ctx.exception))
 
+    async def test_antigravity_missing_api_key_error(self):
+        """
+        Verify AntigravityProvider raises clear ProviderError if GEMINI_API_KEY is missing.
+        """
+        env_clean = {k: v for k, v in os.environ.items() if k not in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "GOOGLE_GENAI_USE_VERTEXAI", "GOOGLE_GENAI_USE_ENTERPRISE")}
+        with patch.dict(os.environ, env_clean, clear=True):
+            agy_p = AntigravityProvider()
+            with self.assertRaises(ProviderError) as ctx:
+                agy_p._spawn_agent("Sys")
+            self.assertIn("Se requiere una API Key de Gemini", str(ctx.exception))
+            self.assertIn("https://aistudio.google.com/app/apikey", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -27,11 +27,31 @@ class AntigravityProvider(BaseAgentProvider):
         """
         try:
             from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig
+        except ImportError as e:
+            raise ProviderError(
+                "Google Antigravity SDK is not installed. Install with: pip install google-antigravity"
+            ) from e
+
+        is_vertex = (
+            os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").lower() in ("true", "1")
+            or os.environ.get("GOOGLE_GENAI_USE_ENTERPRISE", "").lower() in ("true", "1")
+        )
+        if not self._api_key and not is_vertex:
+            raise ProviderError(
+                "Se requiere una API Key de Gemini para usar Antigravity SDK.\n"
+                "1. Obtén una clave gratuita en: https://aistudio.google.com/app/apikey\n"
+                "2. Configúrala en PowerShell antes de ejecutar:\n"
+                "   $env:GEMINI_API_KEY = '<tu_clave>'\n"
+                "3. O pásala como parámetro: AntigravityProvider(api_key='...')"
+            )
+
+        try:
             capabilities = CapabilitiesConfig(
                 allow_write=self.allow_write,
                 allow_terminal=self.allow_terminal,
             )
             config_kwargs = {
+                "model": self.model,
                 "system_instructions": system_prompt,
                 "capabilities": capabilities,
             }
@@ -39,10 +59,6 @@ class AntigravityProvider(BaseAgentProvider):
                 config_kwargs["api_key"] = self._api_key
             config = LocalAgentConfig(**config_kwargs)
             return Agent(config)
-        except ImportError as e:
-            raise ProviderError(
-                "Google Antigravity SDK is not installed. Install with: pip install google-antigravity"
-            ) from e
         except Exception as e:
             raise ProviderError(f"Failed to spawn Antigravity Agent: {e}") from e
 
