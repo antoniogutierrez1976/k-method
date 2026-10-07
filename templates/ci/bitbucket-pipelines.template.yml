@@ -1,0 +1,19 @@
+# Bitbucket Pipelines Template for k-method Quality Gates
+# Place as 'bitbucket-pipelines.yml' in repository root.
+
+image: python:3.10-slim
+
+pipelines:
+  default:
+    - step:
+        name: Universal Quality Gates (k-method)
+        script:
+          - apt-get update && apt-get install -y git
+          - python scripts/verify-all.py
+  pull-requests:
+    '**':
+      - step:
+          name: PR Quality Verification Gate
+          script:
+            - apt-get update && apt-get install -y git
+            - python scripts/verify-all.py

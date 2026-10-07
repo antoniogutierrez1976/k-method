@@ -1,0 +1,24 @@
+# Azure DevOps Pipelines Template for k-method Quality Gates
+# Place as 'azure-pipelines.yml' in repository root.
+
+trigger:
+  branches:
+    include:
+      - main
+pr:
+  branches:
+    include:
+      - '*'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UsePythonVersion@0
+  displayName: 'Setup Python 3.10'
+  inputs:
+    versionSpec: '3.10'
+
+- script: |
+    python scripts/verify-all.py
+  displayName: 'Execute Universal Quality Gates'

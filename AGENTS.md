@@ -8,6 +8,10 @@
 
 ## 2. Available Execution Interfaces (CLI)
 ### Standard CLI Commands
+- Universal Quality Gates Runner (All-in-one Verification):
+  ```bash
+  python scripts/verify-all.py
+  ```
 - Skills & OKF Graph Automated Test Suite:
   ```bash
   python -m unittest discover -s tests -v
