@@ -34,7 +34,7 @@ def run_command(cmd, step_name, env=None):
     print(f"✅ COMPLETADO: {step_name}")
     return 0
 
-def run_all_gates(skip_git_diff=False):
+def run_all_gates(skip_git_diff=False, compile_index=False):
     """Runs all quality gates sequentially."""
     results = {}
     python_bin = sys.executable
@@ -48,10 +48,13 @@ def run_all_gates(skip_git_diff=False):
     if code_tests != 0:
         return 1, results
 
-    # Gate 2: OKF Graph Integrity & Index Recompilation
+    # Gate 2: OKF Graph Integrity Linter
     lint_script = os.path.join(".agents", "skills", "k-wiki", "scripts", "okf-lint.py")
-    lint_cmd = [python_bin, lint_script, "--compile-index"]
-    code_lint = run_command(lint_cmd, "OKF Knowledge Graph Linter & Compiler")
+    lint_cmd = [python_bin, lint_script]
+    if compile_index:
+        lint_cmd.append("--compile-index")
+    step_label = "OKF Knowledge Graph Linter & Compiler" if compile_index else "OKF Knowledge Graph Linter"
+    code_lint = run_command(lint_cmd, step_label)
     results["OKF Knowledge Graph"] = (code_lint == 0)
     if code_lint != 0:
         return 1, results
@@ -71,13 +74,14 @@ def run_all_gates(skip_git_diff=False):
 def main():
     parser = argparse.ArgumentParser(description="k-method Universal Quality Gates Runner")
     parser.add_argument("--skip-git-diff", action="store_true", help="Omit git diff exit-code verification")
+    parser.add_argument("--compile-index", action="store_true", help="Recompile wiki/index.md deterministically")
     args = parser.parse_args()
 
     print("═══════════════════════════════════════════════════════")
     print("       k-method: UNIVERSAL QUALITY GATES RUNNER        ")
     print("═══════════════════════════════════════════════════════")
 
-    exit_code, results = run_all_gates(skip_git_diff=args.skip_git_diff)
+    exit_code, results = run_all_gates(skip_git_diff=args.skip_git_diff, compile_index=args.compile_index)
 
     print("\n═══════════════════════════════════════════════════════")
     print("               RESUMEN DE VERIFICACIÓN                 ")
