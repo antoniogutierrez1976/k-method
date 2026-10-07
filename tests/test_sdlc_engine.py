@@ -22,6 +22,13 @@ class TestSDLCOrchestrationEngine(unittest.IsolatedAsyncioTestCase):
     Covers AC-Sec-1 and AC-1 through AC-5.
     """
 
+    def tearDown(self):
+        import shutil
+        for d in ["implement-feature", "task"]:
+            test_dir = os.path.join("specs", d)
+            if os.path.exists(test_dir):
+                shutil.rmtree(test_dir, ignore_errors=True)
+
     def test_AC_Sec_1_no_shell_injection(self):
         """
         AC-Sec-1: Subprocess execution must reject malicious shell metacharacters in branch names.
@@ -54,6 +61,8 @@ class TestSDLCOrchestrationEngine(unittest.IsolatedAsyncioTestCase):
         spec_result = await engine_valid.execute_spec_stage("Implement feature")
         
         self.assertEqual(spec_result, valid_spec)
+        self.assertIsNotNone(engine_valid.last_spec_path)
+        self.assertTrue(os.path.exists(engine_valid.last_spec_path))
         approval_mock.assert_called_once()
 
     def test_AC_2_stash_shield(self):

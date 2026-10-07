@@ -41,6 +41,13 @@ class TestGUIBackendAPI(unittest.TestCase):
             self.skipTest("scripts/harness/gui/server.py or embedded_skills.py not yet implemented.")
         self.client = TestClient(app)
 
+    def tearDown(self):
+        import shutil
+        for d in ["add-health-check-endpoint", "implement-payment-webhook"]:
+            path = os.path.join(REPO_ROOT, "specs", d)
+            if os.path.exists(path):
+                shutil.rmtree(path, ignore_errors=True)
+
     def test_AC_Sec_1_credential_redaction_in_api(self):
         """
         AC-Sec-1: REST and WebSocket payloads must redact sensitive tokens/keys.
@@ -139,6 +146,8 @@ class TestGUIBackendAPI(unittest.TestCase):
 
             self.assertIsNotNone(approval_event, "Did not receive approval_required event")
             self.assertIn("spec_content", approval_event)
+            self.assertIn("spec_file", approval_event)
+            self.assertTrue(approval_event["spec_file"].endswith("spec.md"))
 
             # Send rejection
             ws.send_json({
@@ -206,6 +215,30 @@ class TestGUIBackendAPI(unittest.TestCase):
                 models = res.json()["models"]["antigravity"]
                 ids = [m["id"] for m in models]
                 self.assertIn("gemini-ultra-special", ids)
+
+    def test_AC_8_informational_query_bypasses_spec_generation(self):
+        """
+        AC-8: Questions and informational queries are answered directly without entering SPEC stage or creating specs.
+        """
+        with self.client.websocket_connect("/ws/sdlc") as ws:
+            ws.send_json({
+                "action": "start",
+                "task": "¿En qué consiste el proyecto k-method?",
+                "provider": "mock",
+                "auto_approve": False,
+            })
+
+            events_received = []
+            while True:
+                msg = ws.receive_json()
+                events_received.append(msg.get("event"))
+                if msg.get("event") in ("completed", "error"):
+                    break
+
+            # Must NOT emit approval_required because queries don't generate specs
+            self.assertNotIn("approval_required", events_received)
+            self.assertIn("stage_changed", events_received)
+            self.assertIn("completed", events_received)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,21 @@
+import os
 import re
 import subprocess
 import sys
+import unicodedata
 from enum import Enum
 from typing import Optional, Callable, List, Tuple
 from dataclasses import dataclass
 
 from scripts.harness.providers.base import BaseAgentProvider, AgentResponse
 from scripts.harness.engine.embedded_skills import get_embedded_directive
+
+
+def slugify(text: str, max_len: int = 50) -> str:
+    """Creates a filesystem-safe slug from a task description."""
+    normalized = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("utf-8")
+    cleaned = re.sub(r"[^a-zA-Z0-9]+", "-", normalized.lower()).strip("-")
+    return cleaned[:max_len].strip("-") or "task"
 
 
 class SDLCStage(Enum):
@@ -131,6 +140,7 @@ class KMethodEngine:
         self.circuit_breaker = CircuitBreaker(threshold=2)
         self.stash_shield = StashShield()
         self.current_stage = SDLCStage.INIT
+        self.last_spec_path: Optional[str] = None
 
     def _default_test_runner(self) -> Tuple[int, str]:
         res = subprocess.run(
@@ -146,7 +156,7 @@ class KMethodEngine:
         output = stdout + "\n" + stderr
         return res.returncode, output
 
-    async def execute_spec_stage(self, task_prompt: str) -> str:
+    async def execute_spec_stage(self, task_prompt: str, output_dir: Optional[str] = None) -> str:
         self.current_stage = SDLCStage.SPEC
         system_prompt = get_embedded_directive("k-spec")
         response: AgentResponse = await self.provider.chat_atomic(
@@ -161,6 +171,15 @@ class KMethodEngine:
                 f"Specification exceeds the 6-AC hard limit ({len(matches)} ACs found: {sorted(matches)}). "
                 "Decompose into an epic."
             )
+
+        # Persist spec.md to disk at specs/<slug>/spec.md
+        slug = slugify(task_prompt)
+        base_dir = output_dir or os.path.join("specs", slug)
+        os.makedirs(base_dir, exist_ok=True)
+        spec_path = os.path.join(base_dir, "spec.md")
+        with open(spec_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        self.last_spec_path = os.path.normpath(spec_path)
 
         if self.approval_callback:
             approved = self.approval_callback(content)

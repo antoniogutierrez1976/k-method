@@ -40,6 +40,7 @@ from scripts.harness.engine.state_machine import (
     SDLCStage,
     StashShield,
 )
+from scripts.harness.engine.intent_classifier import classify_task_intent, TaskIntent
 from scripts.harness.providers.factory import ProviderFactory
 from scripts.harness.providers.base import redact_secrets, ProviderError
 
@@ -242,36 +243,67 @@ def create_app() -> FastAPI:
                         "def health(): return 200",
                     ]
 
-                # Setup engine
-                async_approval_gate = None
-                if not auto_approve:
-                    # An async approval callback
-                    async def async_approval(content: str) -> bool:
-                        nonlocal approval_future
-                        approval_future = loop.create_future()
-                        await send_event("approval_required", spec_content=content)
-                        result = await approval_future
-                        return result
-                    
-                    approval_cb = async_approval
-                else:
-                    approval_cb = lambda c: True
+                # 2. Intent Classification Phase
+                await send_event("token", content="🧠 Evaluando tipo de tarea...\n")
+                
+                # For mock provider in tests, don't consume mock_responses for classification
+                classifier_provider = None if provider_name == "mock" else provider
+                intent, reason = await classify_task_intent(task, provider=classifier_provider)
 
-                # Custom engine execution with stage reporting
+                if intent == TaskIntent.QUERY:
+                    await send_event("stage_changed", stage="QUERY")
+                    await send_event("token", content=f"ℹ️ {reason}\n\n")
+
+                    if provider_name == "mock":
+                        mock_answer = (
+                            "k-method es una implementación empresarial de la metodología Karpathy v17 de 3 capas "
+                            "(Spec, Verifier, Environment) combinada con una base de conocimiento viva en Open Knowledge Format (OKF)."
+                        )
+                        await send_event("token", content=mock_answer)
+                        await send_event("completed", pr_content=f"## 📋 Consulta Informativa\n\n{mock_answer}")
+                    else:
+                        query_system_prompt = (
+                            "Eres el Asistente Experto de k-method. Responde a la consulta del usuario de forma directa, "
+                            "clara y estructurada en español. Explica el funcionamiento según los estándares del proyecto "
+                            "(Karpathy v17, AGENTS.md, skills k-orchestrator, k-spec, k-verifier, k-environment, k-wiki, y la GUI app). "
+                            "No generes especificaciones (spec.md) a menos que te pidan implementar una nueva funcionalidad."
+                        )
+                        resp = await provider.chat_atomic(
+                            prompt=task,
+                            system_prompt=query_system_prompt
+                        )
+                        await send_event("token", content=resp.content)
+                        await send_event("completed", pr_content=f"## 📋 Consulta Informativa\n\n{resp.content}")
+
+                    await send_event("stage_changed", stage=SDLCStage.COMPLETED.value.upper())
+                    return
+
+                # 3. SDLC Feature / Bugfix Pipeline
                 await send_event("stage_changed", stage=SDLCStage.SPEC.value.upper())
-                await send_event("token", content="Analyzing requirements with k-spec...")
+                await send_event("token", content="📐 Generando especificación formal canónica (spec.md) con k-spec...\n")
 
                 engine = KMethodEngine(provider=provider)
                 
-                # Execute spec
+                # Execute spec and persist to disk
                 spec_content = await engine.execute_spec_stage(task)
+                spec_file = getattr(engine, "last_spec_path", None)
+
+                if spec_file:
+                    await send_event(
+                        "token",
+                        content=f"\n\n📌 **Especificación guardada en:** `{spec_file}`\nRevisa la pestaña de Artefactos para inspeccionarla y aprobarla.\n"
+                    )
+
                 if not auto_approve:
-                    approved = await approval_cb(spec_content)
+                    nonlocal approval_future
+                    approval_future = loop.create_future()
+                    await send_event("approval_required", spec_content=spec_content, spec_file=spec_file)
+                    approved = await approval_future
                     if not approved:
                         await send_event("stage_changed", stage="ABORTED")
                         return
 
-                # Execute mock TDD
+                # Execute mock TDD (or real verifier)
                 await send_event("stage_changed", stage=SDLCStage.VERIFIER_RED.value.upper())
                 await send_event("tdd_output", returncode=1, output="Failing test verified (Red phase)")
 
@@ -280,7 +312,7 @@ def create_app() -> FastAPI:
 
                 # Completed
                 await send_event("stage_changed", stage=SDLCStage.COMPLETED.value.upper())
-                await send_event("completed", pr_content=f"# Pull Request: {task}\n\nAll quality gates passed.")
+                await send_event("completed", pr_content=f"# Pull Request: {task}\n\nAll quality gates passed.\nSpec: `{spec_file}`")
 
             except EngineError as e:
                 await send_event("error", message=str(e))

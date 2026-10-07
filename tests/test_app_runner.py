@@ -22,6 +22,13 @@ class TestAppRunner(unittest.IsolatedAsyncioTestCase):
     Covers AC-Sec-1 and AC-1 through AC-5.
     """
 
+    def tearDown(self):
+        import shutil
+        for d in ["build-adapter", "failing-task", "build-ui", "test-task"]:
+            p = os.path.join("specs", d)
+            if os.path.exists(p):
+                shutil.rmtree(p, ignore_errors=True)
+
     def test_AC_Sec_1_terminal_escape_sanitization(self):
         """
         AC-Sec-1: Renderer must sanitize dangerous control characters / OSC escape sequences.
