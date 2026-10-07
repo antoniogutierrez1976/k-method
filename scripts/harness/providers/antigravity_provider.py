@@ -26,7 +26,7 @@ class AntigravityProvider(BaseAgentProvider):
         Dynamically imports and configures the Antigravity Agent instance.
         """
         try:
-            from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig
+            from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig, types
         except ImportError as e:
             raise ProviderError(
                 "Google Antigravity SDK is not installed. Install with: pip install google-antigravity"
@@ -50,10 +50,19 @@ class AntigravityProvider(BaseAgentProvider):
                 allow_write=self.allow_write,
                 allow_terminal=self.allow_terminal,
             )
+            # Resilient retry policy with exponential backoff for transient 503 (high demand) / 429 errors
+            retry_config = types.RetryConfig(
+                api_retry=types.ModelAPIRetryConfig(
+                    max_retries=5,
+                    initial_sleep_duration_ms=2000,
+                    exponential_multiplier=2.0,
+                )
+            )
             config_kwargs = {
                 "model": self.model,
                 "system_instructions": system_prompt,
                 "capabilities": capabilities,
+                "retry_config": retry_config,
             }
             if self._api_key:
                 config_kwargs["api_key"] = self._api_key
