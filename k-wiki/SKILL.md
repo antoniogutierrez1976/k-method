@@ -1,5 +1,5 @@
 ---
-name: llm-wiki-engine
+name: k-wiki
 description: Implements Open Knowledge Format (OKF) on top of Andrej Karpathy's llm-wiki.md architecture. Manages an incremental, typed, and interconnected Markdown knowledge graph with Ingest, Query, Lint, and Deprecate operations. Enforces high signal-to-noise selective ingestion, tracks node lifecycles (active, draft, deprecated, superseded), and compiles structural ADRs and gotchas. Use when cataloging documentation, compiling research, recording architectural decision records (ADRs), deprecating obsolete architectural patterns, reconciling contradictory notes, or checking knowledge graphs for broken links.
 ---
 

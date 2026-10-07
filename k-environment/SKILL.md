@@ -1,5 +1,5 @@
 ---
-name: environment-governor
+name: k-environment
 description: Enforces Layer 3 (Environment) of Karpathy's method across the full SDLC. Scaffolds and governs AGENTS.md via the /constitution command. Manages automated bootstrapping (/init-environment), enforces Git branch/worktree isolation, dirty working tree protection (Stash Shield), atomic rollbacks (/task-abort), trunk staleness rebase guards, minimum 85% branch coverage gates, CI build sanity and dependency audit checks, Zero-Downtime Database Migration protocols, config/env drift prevention (including IaC Sync for Docker/Helm/Terraform), token budgeting, and deterministic OKF graph validation. Strictly protects .tools/ and .claude/skills/ directories from tampering. Use when configuring projects, bootstrapping environments, running system commands, checking operational permissions, planning database migrations, retrieving prior decisions, aborting tasks, or inspecting environment policies.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: spec-driven-development
+name: k-spec
 description: Halts premature code generation and enforces Layer 1 (Spec) of Karpathy's method. Discriminates intent between Features, Incidents (/bugfix), Routine Maintenance (/chore), Radical System Pivots, and PR Feedback (/iterate). Features strict Epic Detection with a hard limit of 6 Acceptance Criteria per spec to force decomposition of high-context requirements into multiple specs. Integrates Threat Modeling (OWASP), defines out-of-scope boundaries, manages formal spec amendments upon technical friction, and generates verifiable spec.md artifacts.
 ---
 

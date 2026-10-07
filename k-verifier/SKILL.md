@@ -1,5 +1,5 @@
 ---
-name: karpathy-verifier
+name: k-verifier
 description: Implements Layer 2 (Verifier) of Karpathy's method. Executes full Red-Green-Refactor TDD cycle, characterization testing for brownfield legacy, Visual Regression Testing (VRT) for UI components via Playwright golden master snapshots, Negative Fault Injection (Mutation Testing) to defeat vacuous tests, stochastic 3x repetition to eliminate flaky tests, minimum 85% branch coverage verification, deadlock circuit breakers (hard abort after 2 identical failures with diff dump), production build and dependency security audit sanity gates, Zero-Downtime Database Migration checks, SemVer contract drift detection, compact regression suites, MCP tooling, and Red-Team adversarial audits (including Infrastructure as Code drift checks).
 ---
 

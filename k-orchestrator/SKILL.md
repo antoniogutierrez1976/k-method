@@ -1,5 +1,5 @@
 ---
-name: karpathy-sdd-orchestrator
+name: k-orchestrator
 description: >-
   End-to-end master state-machine orchestrator binding Spec, Verifier, Environment, and LLM-Wiki into an enterprise-grade SDLC software engineering pipeline. Dispatches isolated subagents with zero-history context windows across the full lifecycle: Stage 0 forensic triage (with telemetry log truncation), /bugfix routing, PR feedback loops (/iterate), /chore for routine maintenance bypass, Threat Modeling (OWASP), Visual Regression Testing (VRT), Stash Shield guards, Git branch isolation, atomic rollbacks (/task-abort), token budgeting, MCP tooling, Strangler Fig migrations, Golden Master snapshots, flaky test immunity (3x run), Negative Fault Injection, deadlock circuit breakers, ≥85% branch coverage gates, CI build & dependency audit sanity, Zero-Downtime Database Migration protocols, config & IaC drift checks, upstream staleness checks, full global regression runs, automated OKF graph compilation, Tooling Anti-Sabotage guards, and Pull Request artifact generation.
 ---
@@ -39,7 +39,7 @@ Coordinates development according to Andrej Karpathy's 3 layers, hardened with e
 
 ## Hardened Subagent Execution Pipeline across SDLC
 
-### Stage 1: Intent Routing & Full-Lifecycle Spec Architect (`spec-driven-development`)
+### Stage 1: Intent Routing & Full-Lifecycle Spec Architect (`k-spec`)
 - **Context:** Fresh session. Prompt + `AGENTS.md` + active OKF index.
 - **Intent Fork:**
   - *Async Feedback Iteration:* Triggered by `/iterate`. Reads `pending-iteration.md`. Evaluates against original spec, logs amendment, and redispatches Verifier on existing branch.
@@ -50,7 +50,7 @@ Coordinates development according to Andrej Karpathy's 3 layers, hardened with e
   - *Opaque Bug / Incident:* Triggered by `/bugfix`. Triggers Stage 0 forensic triage (Truncates logs with CLI tools first). Routes to `specs/{feature}/bugs/BUG-{NNN}.md`.
 - **Deliverable:** The `.md` specification artifact. Halts for human approval.
 
-### Stage 2: Environment Governor & Workspace Isolation (`environment-governor`)
+### Stage 2: Environment Governor & Workspace Isolation (`k-environment`)
 - **Context:** Fresh session. Reads `AGENTS.md` and approved spec.
 - **Actions:**
   - Auto-bootstraps environment if `AGENTS.md` is missing (`/init-environment` or `/constitution`).
@@ -60,7 +60,7 @@ Coordinates development according to Andrej Karpathy's 3 layers, hardened with e
   - Runs OKF linter to assert initial graph validity.
   - Enforces **Tier 3 Tooling Protection**: Never edits files in `.tools/` or `.claude/skills/`.
 
-### Stage 3: Verifier & Implementer (`karpathy-verifier`)
+### Stage 3: Verifier & Implementer (`k-verifier`)
 - **Context:** Fresh session. Reads ONLY `AGENTS.md` + spec artifact.
 - **Loop & Quality Gates:**
   1. *Baseline Snapshot:* For brownfield refactors, asserts Golden Master passes.
@@ -75,7 +75,7 @@ Coordinates development according to Andrej Karpathy's 3 layers, hardened with e
   10. *Production Build & Security Audit:* Executes `pnpm build` and `pnpm audit`. Confirms exit code 0 and zero high/critical vulnerabilities (Checkpoint 6 `[x]`).
   11. *Red-Team Audit:* Verifies absence of N+1 queries, unhandled async exceptions, PII leaks, syncs `.env.example` AND IaC manifests (Docker/Helm/Terraform), validates UI visual bounds, and verifies Zero-Downtime Database Migrations (Checkpoint 7 `[x]`).
 
-### Stage 4: OKF Knowledge Compiler & PR Release Generator (`llm-wiki-engine` + Orchestrator)
+### Stage 4: OKF Knowledge Compiler & PR Release Generator (`k-wiki` + `k-orchestrator`)
 - **Context:** Fresh session. Reads completed spec + `SCHEMA.md`.
 - **Actions:**
   - Selectively compiles ADRs / gotchas into `wiki/` with OKF frontmatter.
