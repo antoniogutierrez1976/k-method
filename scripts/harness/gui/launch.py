@@ -18,6 +18,15 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", 
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 
 @dataclass
 class LauncherConfig:
@@ -60,6 +69,8 @@ def parse_launcher_args(args: Optional[List[str]] = None) -> LauncherConfig:
     )
     parser.add_argument(
         "--no-browser",
+        "--headless",
+        dest="no_browser",
         action="store_true",
         help="Do not automatically open the browser upon startup",
     )

@@ -10,11 +10,12 @@ import {
   BookOpen, 
   Box
 } from 'lucide-react';
-import { EmbeddedSkill, WorkspaceStatus } from '../types.ts';
+import { EmbeddedSkill, WorkspaceStatus, ModelInfo } from '../types.ts';
 
 interface SidebarProps {
   status: WorkspaceStatus | null;
   skills: EmbeddedSkill[];
+  availableModels?: Record<string, ModelInfo[]>;
   selectedProvider: string;
   onProviderChange: (p: string) => void;
   selectedModel: string;
@@ -25,12 +26,15 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   status,
   skills,
+  availableModels,
   selectedProvider,
   onProviderChange,
   selectedModel,
   onModelChange,
   onSelectSkill,
 }) => {
+  const [customMode, setCustomMode] = useState<boolean>(false);
+  const currentModels = (availableModels && availableModels[selectedProvider]) || [];
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
     'workspace': true,
     'skills': true,
@@ -99,14 +103,66 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div>
-            <label className="block text-[11px] text-gray-400 mb-1">Execution Model</label>
-            <input
-              type="text"
-              value={selectedModel}
-              onChange={(e) => onModelChange(e.target.value)}
-              placeholder="e.g. gpt-4o, gemini-2.5-pro, mock"
-              className="w-full bg-surface border border-border rounded px-2.5 py-1.5 text-gray-200 focus:outline-none focus:border-brand-500 font-mono text-xs"
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] text-gray-400">Execution Model</label>
+              {currentModels.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCustomMode(prev => !prev)}
+                  className="text-[10px] text-brand-400 hover:text-brand-300 font-sans cursor-pointer transition"
+                >
+                  {customMode ? 'Elegir del SDK' : 'Personalizado...'}
+                </button>
+              )}
+            </div>
+
+            {currentModels.length > 0 && !customMode ? (
+              <select
+                value={selectedModel}
+                onChange={(e) => {
+                  if (e.target.value === '__custom__') {
+                    setCustomMode(true);
+                  } else {
+                    onModelChange(e.target.value);
+                  }
+                }}
+                className="w-full bg-surface border border-border rounded px-2.5 py-1.5 text-gray-200 focus:outline-none focus:border-brand-500 font-mono text-xs"
+              >
+                {selectedModel && !currentModels.some(m => m.id === selectedModel) && (
+                  <option value={selectedModel}>
+                    {selectedModel} (Personalizado)
+                  </option>
+                )}
+                {currentModels.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name || m.id} {m.default ? '★' : ''}
+                  </option>
+                ))}
+                <option value="__custom__">✏️ Personalizado (escribir a mano)...</option>
+              </select>
+            ) : (
+              <div className="space-y-1">
+                <input
+                  type="text"
+                  value={selectedModel}
+                  onChange={(e) => onModelChange(e.target.value)}
+                  placeholder="e.g. gpt-4o, gemini-2.5-pro, mock"
+                  className="w-full bg-surface border border-border rounded px-2.5 py-1.5 text-gray-200 focus:outline-none focus:border-brand-500 font-mono text-xs"
+                />
+                {customMode && (
+                  <div className="text-[10px] text-gray-400 flex items-center justify-between">
+                    <span>Identificador libre del modelo</span>
+                    <button
+                      type="button"
+                      onClick={() => setCustomMode(false)}
+                      className="text-brand-400 hover:text-brand-300 underline"
+                    >
+                      Volver al SDK
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

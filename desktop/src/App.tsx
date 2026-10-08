@@ -10,15 +10,42 @@ import {
   WorkspaceStatus, 
   EmbeddedSkill, 
   Message, 
-  ArtifactFile 
+  ArtifactFile,
+  ModelInfo 
 } from './types.ts';
 
 const API_BASE = 'http://127.0.0.1:8000';
 const WS_BASE = 'ws://127.0.0.1:8000/ws/sdlc';
 
+const DEFAULT_MODELS: Record<string, ModelInfo[]> = {
+  copilot: [
+    { id: 'auto', name: 'auto (Copilot Selección Automática)', default: true },
+    { id: 'gpt-4o', name: 'gpt-4o (GitHub Copilot CLI)', default: false },
+    { id: 'claude-3.5-sonnet', name: 'claude-3.5-sonnet (GitHub Copilot CLI)', default: false },
+    { id: 'claude-3.7-sonnet', name: 'claude-3.7-sonnet (GitHub Copilot CLI)', default: false },
+    { id: 'o1', name: 'o1 (Copilot Reasoning)', default: false },
+    { id: 'o3-mini', name: 'o3-mini (Copilot Reasoning)', default: false },
+    { id: 'gpt-4o-mini', name: 'gpt-4o-mini (GitHub Copilot CLI)', default: false },
+    { id: 'gpt-6-luna', name: 'gpt-6-luna (Copilot Enterprise)', default: false },
+    { id: 'gpt-6.1-sol', name: 'gpt-6.1-sol (Copilot Enterprise)', default: false },
+  ],
+  antigravity: [
+    { id: 'gemini-2.5-flash', name: 'gemini-2.5-flash (Google GenAI SDK)', default: true },
+    { id: 'gemini-2.5-pro', name: 'gemini-2.5-pro (Google GenAI SDK)', default: false },
+    { id: 'gemini-2.0-flash', name: 'gemini-2.0-flash (Google GenAI SDK)', default: false },
+    { id: 'gemini-2.0-flash-lite', name: 'gemini-2.0-flash-lite (Google GenAI SDK)', default: false },
+    { id: 'gemini-1.5-pro', name: 'gemini-1.5-pro (Google GenAI SDK)', default: false },
+    { id: 'gemini-3.8-flash', name: 'gemini-3.8-flash (Antigravity Default)', default: false },
+  ],
+  mock: [
+    { id: 'mock-model', name: 'mock-model (Offline SDK Testing)', default: true },
+  ],
+};
+
 export const App: React.FC = () => {
   const [status, setStatus] = useState<WorkspaceStatus | null>(null);
   const [skills, setSkills] = useState<EmbeddedSkill[]>([]);
+  const [availableModels, setAvailableModels] = useState<Record<string, ModelInfo[]>>(DEFAULT_MODELS);
   const [selectedProvider, setSelectedProvider] = useState<string>('mock');
   const [selectedModel, setSelectedModel] = useState<string>('mock-model');
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -46,12 +73,53 @@ export const App: React.FC = () => {
       if (res.ok) {
         const data = await res.json();
         setStatus(data);
-        if (data.active_provider) {
-          setSelectedProvider(data.active_provider);
+        if (data.models && Object.keys(data.models).length > 0) {
+          setAvailableModels(data.models);
+        }
+        const activeProv = data.active_provider || data.provider_default;
+        if (activeProv) {
+          setSelectedProvider(prev => {
+            if (prev === 'mock' && activeProv !== 'mock') {
+              const pModels = data.models?.[activeProv] || DEFAULT_MODELS[activeProv] || [];
+              const def = pModels.find((m: ModelInfo) => m.default)?.id || pModels[0]?.id;
+              if (def) setSelectedModel(def);
+              return activeProv;
+            }
+            return prev;
+          });
         }
       }
     } catch (e) {
       console.warn('Status fetch error:', e);
+    }
+  };
+
+  const fetchModels = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/models`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.models && Object.keys(data.models).length > 0) {
+          setAvailableModels(data.models);
+        }
+      }
+    } catch (e) {
+      console.warn('Models fetch error:', e);
+    }
+  };
+
+  const handleProviderChange = (newProvider: string) => {
+    setSelectedProvider(newProvider);
+    const pModels = availableModels[newProvider] || DEFAULT_MODELS[newProvider] || [];
+    const defModel = pModels.find(m => m.default)?.id || pModels[0]?.id;
+    if (defModel) {
+      setSelectedModel(defModel);
+    } else if (newProvider === 'copilot') {
+      setSelectedModel('auto');
+    } else if (newProvider === 'antigravity') {
+      setSelectedModel('gemini-2.5-flash');
+    } else {
+      setSelectedModel('mock-model');
     }
   };
 
@@ -122,6 +190,7 @@ export const App: React.FC = () => {
 
   const refreshAll = () => {
     fetchStatus();
+    fetchModels();
     fetchSkills();
     fetchDiff();
     fetchArtifacts();
@@ -395,8 +464,9 @@ export const App: React.FC = () => {
         <Sidebar
           status={status}
           skills={skills}
+          availableModels={availableModels}
           selectedProvider={selectedProvider}
-          onProviderChange={setSelectedProvider}
+          onProviderChange={handleProviderChange}
           selectedModel={selectedModel}
           onModelChange={setSelectedModel}
           onSelectSkill={setModalSkill}

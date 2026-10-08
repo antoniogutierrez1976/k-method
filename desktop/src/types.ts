@@ -23,12 +23,21 @@ export interface StepItem {
   finishedAt?: Date;
 }
 
+export interface ModelInfo {
+  id: string;
+  name: string;
+  default?: boolean;
+  source?: string;
+}
+
 export interface WorkspaceStatus {
   workspace: string;
   branch: string;
   is_clean: boolean;
-  active_provider: string;
-  available_providers: string[];
+  provider_default?: string;
+  active_provider?: string;
+  available_providers?: string[];
+  models?: Record<string, ModelInfo[]>;
 }
 
 export interface EmbeddedSkill {

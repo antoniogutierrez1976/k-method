@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
+import fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
 import http from 'http';
 
@@ -19,6 +20,29 @@ function checkBackendHealth(): Promise<boolean> {
   });
 }
 
+function findRepoRoot(): string {
+  if (process.env.K_METHOD_WORKSPACE && fs.existsSync(path.join(process.env.K_METHOD_WORKSPACE, 'scripts', 'harness', 'gui', 'launch.py'))) {
+    return process.env.K_METHOD_WORKSPACE;
+  }
+
+  const candidates = [
+    path.resolve(path.dirname(process.execPath), '../../..'),
+    path.resolve(path.dirname(process.execPath), '../..'),
+    path.resolve(__dirname, '../../'),
+    path.resolve(__dirname, '../../../'),
+    process.cwd(),
+    path.resolve(process.cwd(), '../..'),
+  ];
+
+  for (const c of candidates) {
+    if (fs.existsSync(path.join(c, 'scripts', 'harness', 'gui', 'launch.py'))) {
+      return c;
+    }
+  }
+
+  return process.env.K_METHOD_WORKSPACE || process.cwd();
+}
+
 async function ensureBackendRunning() {
   const isHealthy = await checkBackendHealth();
   if (isHealthy) {
@@ -27,15 +51,13 @@ async function ensureBackendRunning() {
   }
 
   console.log('[Sidecar] Launching Python ASGI backend sidecar...');
-  const repoRoot = app.isPackaged
-    ? (process.env.K_METHOD_WORKSPACE || process.cwd())
-    : path.resolve(__dirname, '../../');
+  const repoRoot = findRepoRoot();
   const pythonScript = path.join(repoRoot, 'scripts', 'harness', 'gui', 'launch.py');
 
   try {
-    sidecarProcess = spawn('python', [pythonScript, '--headless'], {
+    sidecarProcess = spawn('python', [pythonScript, '--headless', '--port', '8000'], {
       cwd: repoRoot,
-      env: { ...process.env, PYTHONUNBUFFERED: '1' },
+      env: { ...process.env, PYTHONUNBUFFERED: '1', PYTHONIOENCODING: 'utf-8' },
       stdio: 'pipe',
       shell: true
     });
@@ -52,6 +74,15 @@ async function ensureBackendRunning() {
       console.log(`[Sidecar] Python process exited with code ${code}`);
       sidecarProcess = null;
     });
+
+    // Wait up to 10 seconds for backend to become healthy
+    for (let i = 0; i < 40; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      if (await checkBackendHealth()) {
+        console.log('[Sidecar] Python ASGI backend is ready on port 8000.');
+        break;
+      }
+    }
   } catch (err) {
     console.error('[Sidecar] Failed to start Python backend:', err);
   }
